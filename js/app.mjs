@@ -1,3 +1,4 @@
+import {printableCardHTML} from './card.mjs';
 import {stationBoardHTML} from './board.mjs';
 import strings from './locales/en.mjs';
 import {questionsHTML,updateConditionalQuestions,conditionalAnswers} from './form.mjs';
@@ -137,6 +138,10 @@ function boardView() {
     await addRecords({action_log:[r]});lastExport=null;await refresh();boardView();message('boardSaved');view.querySelector('#action-choice').focus();
   },event);
 }
+function cardView() {
+  view.innerHTML=`<div class="no-print"><h2>${escape(t('cardRoute'))}</h2><p>Synthetic demonstration card. Print a blank copy to practise staff entry.</p><button id="card-print">${escape(t('cardPrint'))}</button></div>${printableCardHTML(strings)}`;
+  view.querySelector('#card-print').onclick=()=>window.print();
+}
 function home() {
   view.innerHTML=`<div class="home"><p class="eyebrow">Checked Here / working demo</p><h2>${escape(t('homeIntro'))}</h2><div class="route-list">${[['staff','staffRoute','homeStaff'],['rider','riderRoute','homeRider'],['board','boardRoute','homeBoard']].map(([key,title,description],i)=>`<section><span class="route-number">0${i+1}</span><h3><a href="#${key}">${escape(t(title))}</a></h3><p>${escape(t(description))}</p></section>`).join('')}</div><p>Use the printable rider card, quota view and exports to explore the full workflow.</p><div class="actions"><button id="home-demo">${escape(t('demo'))}</button><a class="button" href="#card">${escape(t('cardRoute'))}</a></div><p class="hint">${escape(t('demoIntro'))}</p></div>`;
   view.querySelector('#home-demo').onclick=()=>run(loadDemo);
@@ -155,9 +160,9 @@ async function run(action,event) {
 }
 function render() {
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===route?'page':'false'));
-  if(route==='home') home(); else if(route==='board') boardView(); else if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
+  if(route==='card') cardView(); else if(route==='home') home(); else if(route==='board') boardView(); else if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
 }
-for(const [key,name] of [['home','homeRoute'],['staff','staffRoute'],['rider','riderRoute'],['board','boardRoute'],['quota','quotaRoute'],['data','dataRoute']]) {
+for(const [key,name] of [['home','homeRoute'],['staff','staffRoute'],['rider','riderRoute'],['board','boardRoute'],['card','cardRoute'],['quota','quotaRoute'],['data','dataRoute']]) {
   const b=document.createElement('button');b.type='button';b.textContent=t(name);b.dataset.route=key;
   b.onclick=()=>{location.hash=key;};
   document.querySelector('nav').append(b);

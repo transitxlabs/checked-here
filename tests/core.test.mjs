@@ -252,3 +252,13 @@ test('B04 board log exports round trip and conflicts preserve append-only histor
   assert.equal(prepareImport(json,'json',demo,now).duplicates,636);
   const changed=structuredClone(demo);changed.action_log[0].title='Conflict';assert.throws(()=>prepareImport(exportJSON([],[],changed.action_log),'json',demo,now),/conflict/);
 });
+
+import {questionSource} from '../js/questions.mjs';
+import {printableCardHTML} from '../js/card.mjs';
+test('C01 printable card and both forms use the same six-question source',()=>{
+  const questions=questionSource();assert.equal(questions.length,6);assert.deepEqual(questions[1].choices.map(c=>c.value),REASONS);
+  const card=printableCardHTML();for(const q of questions){const prompt=q.prompt.replaceAll('"','&quot;');assert.ok(card.includes(prompt));assert.ok(questionsHTML(true).includes(prompt));assert.ok(questionsHTML(false).includes(prompt));for(const c of q.choices)assert.ok(card.includes(c.label));}
+  assert.ok(card.includes('Emergency: call 911.'));assert.ok(card.includes(en.riderHelp));assert.ok(card.includes(en.notice));assert.ok(card.includes('Otherwise you are done: thank you.'));
+  assert.equal(questions[0].prompt,'How safe do you feel at this station right now?');assert.equal(questions[1].prompt,'What affects how safe you feel here today? Tick up to 3.');assert.equal(questions[4].prompt,'How much do you trust the updates posted at this station?');
+  for(const module of ['form','card'])assert.ok(readFileSync(new URL(`../js/${module}.mjs`,import.meta.url),'utf8').includes('questionSource(locale)'));
+});
