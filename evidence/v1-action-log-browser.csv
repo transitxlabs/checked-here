@@ -1,0 +1,8 @@
+id,action_id,synthetic,station,title,concern,status,reason,updated_at
+00000000-0000-4000-8000-000000000701,00000000-0000-4000-8000-000000000700,true,S1,Review platform lighting,lighting,planned,,2026-01-01T09:00:00.000Z
+00000000-0000-4000-8000-000000000703,00000000-0000-4000-8000-000000000702,true,S1,Check information display,information,planned,,2026-01-01T09:00:00.000Z
+00000000-0000-4000-8000-000000000706,00000000-0000-4000-8000-000000000705,true,S1,Arrange upkeep visit,cleanliness,planned,,2026-01-01T09:00:00.000Z
+00000000-0000-4000-8000-000000000704,00000000-0000-4000-8000-000000000702,true,S1,Check information display,information,checked,,2026-01-02T14:30:00.000Z
+00000000-0000-4000-8000-000000000707,00000000-0000-4000-8000-000000000705,true,S1,Arrange upkeep visit,cleanliness,not-done,Synthetic example: visit rescheduled.,2026-01-02T14:30:00.000Z
+9b10658c-fcc1-4c7a-bc60-ab9bfb608f77,e4b4c043-149e-4b3c-9914-4d0dd9615134,true,S1,Synthetic access check,other,not-done,Synthetic example: visit deferred.,2026-10-13T22:06:28.394Z
+8d27b122-019c-4336-a69a-acdd74ed0a3e,e4b4c043-149e-4b3c-9914-4d0dd9615134,true,S1,Synthetic access check,other,checked,,2026-10-13T22:06:28.497Z

@@ -1,0 +1,33 @@
+home: PASS
+  Tab to home; Home
+  Tab to home-demo; Load synthetic demo
+staff: PASS
+  Tab to staff; Staff entry
+  Tab to reason-lighting;
+  Tab to trust; Choose an answer12345No opinion
+  Tab to checked_meaning; Choose an answerStaff checked this action on siteThe station is rated safeNot sure
+  Tab to BUTTON; Save synthetic check-in
+  Tab to BUTTON; Save synthetic check-in
+  Tab to BUTTON; Save synthetic shift log
+rider: PASS
+  Tab to rider; Rider phone form
+  Tab to reason-lighting;
+  Tab to trust; Choose an answer12345No opinion
+  Tab to checked_meaning; Choose an answerStaff checked this action on siteThe station is rated safeNot sure
+  Tab to BUTTON; Save synthetic check-in
+  Tab to BUTTON; Save synthetic check-in
+board: PASS
+  Tab to board; Station board
+  Tab to BUTTON; Save synthetic action update
+card: PASS
+  Tab to card; Printable rider card
+  Tab to card-print; Print rider card
+quota: PASS
+  Tab to quota; Quota view
+  Tab to DIV; Staffed quotaStationRoundCompletedTargetRemainingWeekday morningWeekday middayWeekday eveningWeekend
+data: PASS
+  Tab to data; Export and import
+  Tab to clear; Clear this device after export
+  Tab to exportJSON; Export all data JSON
+  Tab to clear; Clear this device after export
+  Tab to BUTTON; Confirm and clear device

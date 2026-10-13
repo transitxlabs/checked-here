@@ -1,0 +1,111 @@
+TAP version 13
+# Subtest: E03 JSON schema preserves check-ins and shifts
+not ok 1 - E03 JSON schema preserves check-ins and shifts
+  ---
+  duration_ms: 2.449125
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-iJpNeT/tests/core.test.mjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    ... Skipped lines
+
+      {
+        checkins: [
+          {
+            card_number: 1,
+            checked_meaning: 'on-site',
+    ...
+        ],
+    +   schema_version: 2,
+    -   schema_version: 1,
+        shifts: [
+          {
+            asks: 100,
+            date: '2026-01-01',
+            id: '00000000-0000-4000-8000-000000000076',
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    schema_version: 1
+    checkins:
+      0:
+        id: '12345678-1234-4234-8234-123456789012'
+        source: 'staff'
+        synthetic: true
+        station: 'S2'
+        round: 1
+        date: '2026-10-01'
+        time_band: 'weekday-morning'
+        staff_code: 'F01'
+        card_number: 1
+        safety: 8
+        reasons:
+          0: 'lighting'
+          1: 'help'
+        knows_help: 'yes'
+        noticed_board: 'yes'
+        trust: 3
+        checked_meaning: 'on-site'
+    shifts:
+      0:
+        id: '00000000-0000-4000-8000-000000000076'
+        synthetic: true
+        station: 'S1'
+        round: 1
+        date: '2026-01-01'
+        time_band: 'weekday-morning'
+        staff_code: 'F01'
+        asks: 100
+        refusals: 25
+  actual:
+    schema_version: 2
+    checkins:
+      0:
+        id: '12345678-1234-4234-8234-123456789012'
+        source: 'staff'
+        synthetic: true
+        station: 'S2'
+        round: 1
+        date: '2026-10-01'
+        time_band: 'weekday-morning'
+        staff_code: 'F01'
+        card_number: 1
+        safety: 8
+        reasons:
+          0: 'lighting'
+          1: 'help'
+        knows_help: 'yes'
+        noticed_board: 'yes'
+        trust: 3
+        checked_meaning: 'on-site'
+    shifts:
+      0:
+        id: '00000000-0000-4000-8000-000000000076'
+        synthetic: true
+        station: 'S1'
+        round: 1
+        date: '2026-01-01'
+        time_band: 'weekday-morning'
+        staff_code: 'F01'
+        asks: 100
+        refusals: 25
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-iJpNeT/tests/core.test.mjs:75:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 48.767833

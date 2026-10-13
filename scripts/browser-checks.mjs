@@ -155,7 +155,7 @@ try {
   results.passed=true;results.axeSource=axePath?'Existing local copy; no installation':'No existing local copy; not installed';
 } catch(error){results.passed=false;results.failure=error.stack;process.exitCode=1;} finally {
   writeFileSync('evidence/v1-browser-results.json',JSON.stringify(results,null,2)+'\n');
-  writeFileSync('evidence/v1-keyboard-output.txt',results.keyboard.map(r=>`${r.route}: ${r.passed?'PASS':'FAIL'}\n${r.steps.map(s=>`  Tab to ${s.id||s.route||s.name||s.tag}; ${s.text}`).join('\n')}`).join('\n')+'\n');
+  writeFileSync('evidence/v1-keyboard-output.txt',results.keyboard.map(r=>`${r.route}: ${r.passed?'PASS':'FAIL'}\n${r.steps.map(s=>`  Tab to ${s.id||s.route||s.name||s.tag}; ${s.text}`.trimEnd()).join('\n')}`).join('\n')+'\n');
   writeFileSync('evidence/v1-offline-results.json',JSON.stringify(results.offline,null,2)+'\n');
   await stopServer();await browser?.close();
   process.stdout.write(JSON.stringify({passed:results.passed,layouts:results.layouts.length,axeChecks:results.axe.length,controls:results.controls.length,keyboard:results.keyboard.length,offline:results.offline.length,errors:results.errors,failure:results.failure},null,2)+'\n');

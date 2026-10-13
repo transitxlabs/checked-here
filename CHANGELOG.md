@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0 - 2026-10-13
+
+- Added dated, append-only station actions with three statuses, required Not done reasons, printable boards and board and log CSV exports.
+- Generated a printable rider card and both forms from the same question source using draft v2.1 wording and demonstration help placeholders.
+- Extended synthetic demo loading and verified clearing to include the full action log.
+- Added a clear home screen, responsive system typography, light and dark schemes, reduced-motion support and linked error summaries.
+- Added a relative-path manifest, local icons and a versioned cache covering every application asset.
+- Added semantic fault tests, browser screenshots, keyboard and accessibility-tree checks, local accessibility scans, print output and stopped-server offline reload checks.
+- Updated public documentation, privacy limits and the data dictionary. Preserved Apache-2.0 and Open by design.
+
 ## 0.2.0 - 2026-10-13
 
 - Made questions 5 and 6 conditional on Yes to question 4 in both forms, validation, imports, exports, dictionaries and synthetic demo records.

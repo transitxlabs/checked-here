@@ -1,0 +1,457 @@
+TAP version 13
+# Subtest: B04 board log exports round trip and conflicts preserve append-only history
+not ok 1 - B04 board log exports round trip and conflicts preserve append-only history
+  ---
+  duration_ms: 16.921709
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-ZrTUae/tests/core.test.mjs:248:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000700',
+    -     concern: 'lighting',
+    -     id: '00000000-0000-4000-8000-000000000701',
+    -     reason: '',
+    -     station: 'S1',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Review platform lighting',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000702',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000703',
+    -     reason: '',
+    -     station: 'S1',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000705',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000706',
+    -     reason: '',
+    -     station: 'S1',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000708',
+    -     concern: 'lighting',
+    -     id: '00000000-0000-4000-8000-000000000709',
+    -     reason: '',
+    -     station: 'S2',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Review platform lighting',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000710',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000711',
+    -     reason: '',
+    -     station: 'S2',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000713',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000714',
+    -     reason: '',
+    -     station: 'S2',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000716',
+    -     concern: 'lighting',
+    -     id: '00000000-0000-4000-8000-000000000717',
+    -     reason: '',
+    -     station: 'S3',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Review platform lighting',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000718',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000719',
+    -     reason: '',
+    -     station: 'S3',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000721',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000722',
+    -     reason: '',
+    -     station: 'S3',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000724',
+    -     concern: 'lighting',
+    -     id: '00000000-0000-4000-8000-000000000725',
+    -     reason: '',
+    -     station: 'S4',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Review platform lighting',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000726',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000727',
+    -     reason: '',
+    -     station: 'S4',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000729',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000730',
+    -     reason: '',
+    -     station: 'S4',
+    -     status: 'planned',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-01T09:00:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000702',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000704',
+    -     reason: '',
+    -     station: 'S1',
+    -     status: 'checked',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000705',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000707',
+    -     reason: 'Synthetic example: visit rescheduled.',
+    -     station: 'S1',
+    -     status: 'not-done',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000710',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000712',
+    -     reason: '',
+    -     station: 'S2',
+    -     status: 'checked',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000713',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000715',
+    -     reason: 'Synthetic example: visit rescheduled.',
+    -     station: 'S2',
+    -     status: 'not-done',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000718',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000720',
+    -     reason: '',
+    -     station: 'S3',
+    -     status: 'checked',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000721',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000723',
+    -     reason: 'Synthetic example: visit rescheduled.',
+    -     station: 'S3',
+    -     status: 'not-done',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000726',
+    -     concern: 'information',
+    -     id: '00000000-0000-4000-8000-000000000728',
+    -     reason: '',
+    -     station: 'S4',
+    -     status: 'checked',
+    -     synthetic: true,
+    -     title: 'Check information display',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   },
+    -   {
+    -     action_id: '00000000-0000-4000-8000-000000000729',
+    -     concern: 'cleanliness',
+    -     id: '00000000-0000-4000-8000-000000000731',
+    -     reason: 'Synthetic example: visit rescheduled.',
+    -     station: 'S4',
+    -     status: 'not-done',
+    -     synthetic: true,
+    -     title: 'Arrange upkeep visit',
+    -     updated_at: '2026-01-02T14:30:00.000Z'
+    -   }
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      action_id: '00000000-0000-4000-8000-000000000700'
+      synthetic: true
+      station: 'S1'
+      title: 'Review platform lighting'
+      concern: 'lighting'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000701'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    1:
+      action_id: '00000000-0000-4000-8000-000000000702'
+      synthetic: true
+      station: 'S1'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000703'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    2:
+      action_id: '00000000-0000-4000-8000-000000000705'
+      synthetic: true
+      station: 'S1'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000706'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    3:
+      action_id: '00000000-0000-4000-8000-000000000708'
+      synthetic: true
+      station: 'S2'
+      title: 'Review platform lighting'
+      concern: 'lighting'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000709'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    4:
+      action_id: '00000000-0000-4000-8000-000000000710'
+      synthetic: true
+      station: 'S2'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000711'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    5:
+      action_id: '00000000-0000-4000-8000-000000000713'
+      synthetic: true
+      station: 'S2'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000714'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    6:
+      action_id: '00000000-0000-4000-8000-000000000716'
+      synthetic: true
+      station: 'S3'
+      title: 'Review platform lighting'
+      concern: 'lighting'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000717'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    7:
+      action_id: '00000000-0000-4000-8000-000000000718'
+      synthetic: true
+      station: 'S3'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000719'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    8:
+      action_id: '00000000-0000-4000-8000-000000000721'
+      synthetic: true
+      station: 'S3'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000722'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    9:
+      action_id: '00000000-0000-4000-8000-000000000724'
+      synthetic: true
+      station: 'S4'
+      title: 'Review platform lighting'
+      concern: 'lighting'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000725'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    10:
+      action_id: '00000000-0000-4000-8000-000000000726'
+      synthetic: true
+      station: 'S4'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000727'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    11:
+      action_id: '00000000-0000-4000-8000-000000000729'
+      synthetic: true
+      station: 'S4'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000730'
+      status: 'planned'
+      updated_at: '2026-01-01T09:00:00.000Z'
+    12:
+      action_id: '00000000-0000-4000-8000-000000000702'
+      synthetic: true
+      station: 'S1'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000704'
+      status: 'checked'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    13:
+      action_id: '00000000-0000-4000-8000-000000000705'
+      synthetic: true
+      station: 'S1'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: 'Synthetic example: visit rescheduled.'
+      id: '00000000-0000-4000-8000-000000000707'
+      status: 'not-done'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    14:
+      action_id: '00000000-0000-4000-8000-000000000710'
+      synthetic: true
+      station: 'S2'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000712'
+      status: 'checked'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    15:
+      action_id: '00000000-0000-4000-8000-000000000713'
+      synthetic: true
+      station: 'S2'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: 'Synthetic example: visit rescheduled.'
+      id: '00000000-0000-4000-8000-000000000715'
+      status: 'not-done'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    16:
+      action_id: '00000000-0000-4000-8000-000000000718'
+      synthetic: true
+      station: 'S3'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000720'
+      status: 'checked'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    17:
+      action_id: '00000000-0000-4000-8000-000000000721'
+      synthetic: true
+      station: 'S3'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: 'Synthetic example: visit rescheduled.'
+      id: '00000000-0000-4000-8000-000000000723'
+      status: 'not-done'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    18:
+      action_id: '00000000-0000-4000-8000-000000000726'
+      synthetic: true
+      station: 'S4'
+      title: 'Check information display'
+      concern: 'information'
+      reason: ''
+      id: '00000000-0000-4000-8000-000000000728'
+      status: 'checked'
+      updated_at: '2026-01-02T14:30:00.000Z'
+    19:
+      action_id: '00000000-0000-4000-8000-000000000729'
+      synthetic: true
+      station: 'S4'
+      title: 'Arrange upkeep visit'
+      concern: 'cleanliness'
+      reason: 'Synthetic example: visit rescheduled.'
+      id: '00000000-0000-4000-8000-000000000731'
+      status: 'not-done'
+      updated_at: '2026-01-02T14:30:00.000Z'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-ZrTUae/tests/core.test.mjs:250:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 65.503917

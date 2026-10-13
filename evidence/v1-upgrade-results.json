@@ -1,0 +1,90 @@
+{
+  "before": [
+    "transitx-checkin-v4"
+  ],
+  "after": [
+    "transitx-checkin-v1.0.0"
+  ],
+  "preserved": {
+    "checkins": 1,
+    "shifts": 1,
+    "action_log": 0
+  },
+  "manifest": {
+    "id": "./",
+    "name": "Checked Here | TransitX Labs",
+    "short_name": "Checked Here",
+    "description": "Synthetic demonstration of rider check-ins and dated station actions. Data stays in this browser.",
+    "lang": "en",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#f7f8f4",
+    "theme_color": "#1b594a",
+    "icons": [
+      {
+        "src": "icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      },
+      {
+        "src": "icons/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "icons/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ]
+  },
+  "routes": [
+    {
+      "route": "home",
+      "heading": "A working demo of dated station updates and short, voluntary rider check-ins.",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "staff",
+      "heading": "Staff entry",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "rider",
+      "heading": "Rider phone form",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "board",
+      "heading": "Station board",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "card",
+      "heading": "Printable rider card",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "quota",
+      "heading": "Staffed quota",
+      "offline": true,
+      "reloaded": true
+    },
+    {
+      "route": "data",
+      "heading": "Device data",
+      "offline": true,
+      "reloaded": true
+    }
+  ],
+  "passed": true
+}
