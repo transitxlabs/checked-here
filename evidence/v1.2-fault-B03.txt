@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: B03 board and action log CSV have the specified columns and synthetic markers
+not ok 1 - B03 board and action log CSV have the specified columns and synthetic markers
+  ---
+  duration_ms: 18.295542
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-yjdK64/tests/core.test.mjs:242:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      [
+    +   'id',
+        'action_id',
+        'synthetic',
+        'station',
+        'title',
+        'concern',
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'action_id'
+    1: 'synthetic'
+    2: 'station'
+    3: 'title'
+    4: 'concern'
+    5: 'status'
+    6: 'reason'
+    7: 'updated_at'
+  actual:
+    0: 'id'
+    1: 'action_id'
+    2: 'synthetic'
+    3: 'station'
+    4: 'title'
+    5: 'concern'
+    6: 'status'
+    7: 'reason'
+    8: 'updated_at'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-yjdK64/tests/core.test.mjs:244:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.394084

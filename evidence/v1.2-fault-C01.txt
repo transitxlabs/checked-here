@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: C01 printable card and both forms use the same six-question source
+not ok 1 - C01 printable card and both forms use the same six-question source
+  ---
+  duration_ms: 2.660458
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-xp32FN/tests/core.test.mjs:258:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'Wrong question'
+    - 'How safe do you feel at this station right now?'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'How safe do you feel at this station right now?'
+  actual: 'Wrong question'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-xp32FN/tests/core.test.mjs:262:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49.572709

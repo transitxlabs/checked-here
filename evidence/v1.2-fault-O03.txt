@@ -1,0 +1,42 @@
+TAP version 13
+# Subtest: O03 worker installs assets deletes old caches and serves relative paths offline
+not ok 1 - O03 worker installs assets deletes old caches and serves relative paths offline
+  ---
+  duration_ms: 11.892041
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-mVA0JS/tests/core.test.mjs:301:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      [
+        'transitx-checkin-v1.1.1',
+    +   'transitx-checkin-v4',
+        'unrelated-cache'
+      ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'transitx-checkin-v1.1.1'
+    1: 'unrelated-cache'
+  actual:
+    0: 'transitx-checkin-v1.1.1'
+    1: 'transitx-checkin-v4'
+    2: 'unrelated-cache'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-mVA0JS/tests/core.test.mjs:307:64)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 60.274292
