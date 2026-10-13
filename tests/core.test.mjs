@@ -286,3 +286,25 @@ test('M02 loading and clearing retains transaction safeguards and clears every d
     assert.deepEqual(await readAll(),{checkins:[],shifts:[],action_log:[]});
   } finally {globalThis.indexedDB=previous;}
 });
+
+import {readdirSync} from 'node:fs';
+test('O02 offline cache covers every page module manifest and icon',()=>{
+  const root=new URL('../',import.meta.url),worker=readFileSync(new URL('sw.js',root),'utf8');
+  const assets=['index.html','styles.css','icon.svg','manifest.webmanifest',...readdirSync(new URL('icons/',root)).map(f=>`icons/${f}`)];
+  const walk=(dir)=>{for(const file of readdirSync(new URL(dir+'/',root),{withFileTypes:true})){const path=`${dir}/${file.name}`;if(file.isDirectory())walk(path);else assets.push(path);}};walk('js');
+  for(const file of assets)assert.ok(worker.includes(`'./${file}'`),file);
+  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.0.0'"));assert.ok(!worker.includes('fetch(event.request)'));
+  const manifest=JSON.parse(readFileSync(new URL('manifest.webmanifest',root),'utf8'));assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.icons.length,3);
+});
+
+import {runInNewContext} from 'node:vm';
+test('O03 worker installs assets deletes old caches and serves relative paths offline',async()=>{
+  const handlers={},entries=new Map([['transitx-checkin-v4',new Map()],['unrelated-cache',new Map()]]),base='http://localhost/checkin-prototype/';let skipped=false,claimed=false;
+  const caches={keys:async()=>[...entries.keys()],delete:async key=>entries.delete(key),open:async key=>{if(!entries.has(key))entries.set(key,new Map());const store=entries.get(key);return {addAll:async files=>{for(const file of files)store.set(new URL(file,base).href,new Response('cached '+file));},match:async request=>store.get(typeof request==='string'?request:request.url)};}};
+  const self={location:{origin:'http://localhost',href:base+'sw.js'},addEventListener:(type,handler)=>handlers[type]=handler,skipWaiting:async()=>{skipped=true;},clients:{claim:async()=>{claimed=true;}}};
+  runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),{self,caches,URL,Response});
+  const lifecycle=async type=>{let work;handlers[type]({waitUntil:promise=>work=promise});await work;};await lifecycle('install');await lifecycle('activate');
+  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.0.0','unrelated-cache']);
+  const request=async(url,mode)=>{let response;handlers.fetch({request:{method:'GET',url,mode},respondWith:promise=>response=promise});return await response;};
+  assert.equal(await(await request(base+'?s=S2','navigate')).text(),'cached ./index.html');assert.equal((await request(base+'js/card.mjs','cors')).status,200);assert.equal((await request(base+'missing.txt','cors')).status,404);assert.equal((await request('https://example.invalid/','cors')).status,403);
+});

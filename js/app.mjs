@@ -8,7 +8,7 @@ const t = key => strings[key];
 const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const labelFor = value => t(value.replaceAll('-','_')) ?? value;
 const view=document.querySelector('#view'),status=document.querySelector('#status');
-let data={checkins:[],shifts:[],action_log:[]},route=new URL(location.href).searchParams.has('s')?'rider':location.hash.slice(1)||'home',lastExport=null,busy=false;
+let data={checkins:[],shifts:[],action_log:[]},route=location.hash.slice(1)||(new URL(location.href).searchParams.has('s')?'rider':'home'),lastExport=null,busy=false;
 const stationFromURL=new URL(location.href).searchParams.get('s');
 document.title=t('title');
 document.querySelectorAll('[data-text]').forEach(el=>el.textContent=t(el.dataset.text));
@@ -19,7 +19,7 @@ function select(k,values,hint='') {
   return `<label for="${k}">${escape(t(k))}</label><select id="${k}" name="${k}" aria-describedby="error-${k}${hint?` hint-${k}`:''}"><option value="">${escape(t('choose'))}</option>${values.map(v=>`<option value="${escape(v)}">${escape(labelFor(String(v)))}</option>`).join('')}</select>${hint?`<p class="hint" id="hint-${k}">${escape(t(hint))}</p>`:''}${errorHTML(k)}`;
 }
 function input(k,type,hint='',attrs='') {
-  return `<label for="${k}">${escape(t(k))}</label><input id="${k}" name="${k}" type="${type}" ${attrs} aria-describedby="error-${k}${hint?` hint-${k}`:''}">${hint?`<p class="hint" id="hint-${k}">${escape(t(hint))}</p>`:''}${errorHTML(k)}`;
+  return `<label for="${k}">${escape(t(k==='title'?'titleField':k))}</label><input id="${k}" name="${k}" type="${type}" ${attrs} aria-describedby="error-${k}${hint?` hint-${k}`:''}">${hint?`<p class="hint" id="hint-${k}">${escape(t(hint))}</p>`:''}${errorHTML(k)}`;
 }
 function context(staff, shift=false) {
   return `<div class="context"><div>${select('station',STATIONS)}</div>${staff?`<div>${select('round',[1,2])}</div><div>${input('date','date','',`max="${today()}"`)}</div>`:''}<div>${select('time_band',BANDS)}</div>${staff?`<div>${input('staff_code','text','staffHint','maxlength="5" autocomplete="off" pattern="[A-Z][0-9]{2,4}"')}</div>${shift?'':`<div>${input('card_number','number','cardHint','min="1" step="1"')}</div>`}`:''}</div>`;
@@ -70,7 +70,7 @@ function showErrors(form,errors) {
     const el=form.querySelector(`[id$="error-${k}"]`); if(el) {el.textContent=t(key);el.hidden=false;}
     form.querySelectorAll(`[name="${k}"]`).forEach(el=>el.setAttribute('aria-invalid','true'));
   }
-  if(Object.keys(errors).length) { message('formErrors'); const summary=document.createElement('div');summary.className='error-summary';summary.setAttribute('role','alert');summary.innerHTML=`<p>${escape(t('formErrors'))}</p><ul>${Object.entries(errors).map(([k,key])=>{const field=form.querySelector(`[name="${k}"]`);return `<li><a href="#${field?.id??form.id}">${escape(t(key))}</a></li>`;}).join('')}</ul>`;form.prepend(summary);form.querySelector('[aria-invalid="true"]')?.focus(); return true; }
+  if(Object.keys(errors).length) { message('formErrors'); const summary=document.createElement('div');summary.className='error-summary';summary.setAttribute('role','alert');summary.tabIndex=-1;summary.innerHTML=`<p>${escape(t('formErrors'))}</p><ul>${Object.entries(errors).map(([k,key])=>{const field=form.querySelector(`[name="${k}"]`);return `<li><a href="#${field?.id??form.id}">${escape(t(key))}</a></li>`;}).join('')}</ul>`;form.prepend(summary);const first=form.querySelector('[aria-invalid="true"]');if(first)first.focus();else summary.focus(); return true; }
   return false;
 }
 function table(caption,headers,rows) { return `<div class="table-scroll" tabindex="0" role="region" aria-label="${escape(caption)}"><table><caption>${escape(caption)}</caption><thead><tr>${headers.map(h=>`<th scope="col">${escape(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map((v,i)=>i===0?`<th scope="row">${escape(v)}</th>`:`<td>${escape(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
@@ -112,7 +112,7 @@ function dataView() {
 let boardStation='S1';
 function boardView() {
   const actions=currentActions(data.action_log,boardStation);
-  view.innerHTML=`<div class="no-print"><h2>${escape(t('boardRoute'))}</h2><p>${escape(t('boardIntro'))}</p><label for="board-station">${escape(t('boardStation'))}</label><select id="board-station">${STATIONS.map(s=>`<option ${s===boardStation?'selected':''}>${s}</option>`).join('')}</select><div class="actions"><button id="board-print">${escape(t('boardPrint'))}</button><button id="board-csv">${escape(t('exportBoard'))}</button><button id="log-csv">${escape(t('exportLog'))}</button></div></div>${stationBoardHTML(data.action_log,boardStation,strings)}<section class="no-print"><h2>${escape(t('boardForm'))}</h2><form id="board-form" novalidate><fieldset><legend>${escape(t('actionChoice'))}</legend><label for="action-choice">${escape(t('actionChoice'))}</label><select id="action-choice"><option value="">${escape(t('newAction'))}</option>${actions.map(r=>`<option value="${r.action_id}">${escape(r.title)}</option>`).join('')}</select></fieldset><div class="context"><div>${input('title','text','','maxlength="100"')}</div><div>${select('concern',CONCERNS)}</div></div><fieldset><legend>${escape(t('action_status'))}</legend>${select('action_status',ACTION_STATUSES)}</fieldset><div id="reason-wrap" hidden>${input('reason','text','','maxlength="160"')}</div><button type="submit">${escape(t('boardSave'))}</button></form></section><section class="no-print"><h2>${escape(t('actionLog'))}</h2>${table(t('actionLog'),[t('title'),t('action_status'),t('reason'),t('updated'),t('syntheticRecord')],data.action_log.filter(r=>r.station===boardStation).map(r=>[r.title,labelFor(r.status),r.reason,r.updated_at,t('syntheticRecord')]))}</section>`;
+  view.innerHTML=`<div class="no-print"><h2>${escape(t('boardRoute'))}</h2><p>${escape(t('boardIntro'))}</p><label for="board-station">${escape(t('boardStation'))}</label><select id="board-station">${STATIONS.map(s=>`<option ${s===boardStation?'selected':''}>${s}</option>`).join('')}</select><div class="actions"><button id="board-print">${escape(t('boardPrint'))}</button><button id="board-csv">${escape(t('exportBoard'))}</button><button id="log-csv">${escape(t('exportLog'))}</button></div></div>${stationBoardHTML(data.action_log,boardStation,strings)}<section class="no-print"><h2>${escape(t('boardForm'))}</h2><form id="board-form" novalidate><fieldset><legend>${escape(t('actionChoice'))}</legend><label for="action-choice">${escape(t('actionChoice'))}</label><select id="action-choice"><option value="">${escape(t('newAction'))}</option>${actions.map(r=>`<option value="${r.action_id}">${escape(r.title)}</option>`).join('')}</select></fieldset><div class="context"><div>${input('title','text','','maxlength="100"')}</div><div>${select('concern',CONCERNS)}</div></div><fieldset><legend>${escape(t('action_status'))}</legend>${select('action_status',ACTION_STATUSES)}</fieldset><div id="reason-wrap" hidden>${input('reason','text','','maxlength="160"')}</div><button type="submit">${escape(t('boardSave'))}</button></form></section><section class="no-print"><h2>${escape(t('actionLog'))}</h2>${table(t('actionLog'),[t('titleField'),t('action_status'),t('reason'),t('updated'),t('syntheticRecord')],data.action_log.filter(r=>r.station===boardStation).map(r=>[r.title,labelFor(r.status),r.reason,r.updated_at,t('syntheticRecord')]))}</section>`;
   view.querySelector('#board-station').onchange=event=>run(async()=>{boardStation=event.target.value;await refresh();boardView();view.querySelector('#board-station').focus();});
   view.querySelector('#board-print').onclick=()=>window.print();
   view.querySelector('#board-csv').onclick=()=>run(async()=>{await refresh();download(`board-${boardStation}.csv`,boardCSV(data.action_log,boardStation),'text/csv');message('exportDone');});
@@ -156,6 +156,7 @@ async function run(action,event) {
   try {await action();} catch(e) {message(e.message==='clearNeedExport'?'clearNeedExport':'storageError');} finally {busy=false;buttons.forEach(b=>b.disabled=false);}
 }
 function render() {
+  if(!['home','staff','rider','board','card','quota','data'].includes(route))route='home';
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===route?'page':'false'));
   if(route==='card') cardView(); else if(route==='home') home(); else if(route==='board') boardView(); else if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
 }
@@ -169,9 +170,14 @@ message('loading');
 try {await openStorage();await refresh();status.textContent='';render();} catch {message('storageError');document.querySelectorAll('nav button').forEach(b=>b.disabled=true);}
 const offline=document.querySelector('#offline');offline.textContent=t('offlinePreparing');
 if('serviceWorker' in navigator) {
-  try {const existing=await navigator.serviceWorker.getRegistration();
-    const registration=existing?.active?existing:await navigator.serviceWorker.register('./sw.js');await navigator.serviceWorker.ready;
-    if(registration.active) offline.textContent=t('offlineReady');
-    navigator.serviceWorker.addEventListener('controllerchange',()=>offline.textContent=t('offlineReady'));
+  try {
+    const registration=await navigator.serviceWorker.register('./sw.js');
+    // Registration checks for a version change. Cache only local static assets.
+    await navigator.serviceWorker.ready;
+    if(!navigator.serviceWorker.controller) await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
+    const cache=await caches.open('transitx-checkin-v1.0.0');
+    if(await cache.match(new URL('./js/card.mjs',location.href))) offline.textContent=t('offlineReady');
+    else offline.textContent=t('offlinePreparing');
+    navigator.serviceWorker.addEventListener('controllerchange',async()=>{const updated=await caches.open('transitx-checkin-v1.0.0');if(await updated.match(new URL('./js/card.mjs',location.href)))offline.textContent=t('offlineReady');});
   } catch {offline.textContent=t('offlineError');}
 } else offline.textContent=t('offlineError');

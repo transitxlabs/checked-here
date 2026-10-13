@@ -32,6 +32,8 @@ export default [
  ['F03','js/form.mjs','control.required=asked','control.required=false'],
  ['F04','js/form.mjs',"trust:noticed_board==='yes'?trust:null",'trust'],
  ['F05','js/locales/en.mjs',"cardHeader: 'A short, voluntary card.'", "cardHeader: 'About one minute.'"],
+ ['O03','sw.js',"k.startsWith('transitx-checkin-')&&k!==CACHE",'false'],
+ ['O02','sw.js',"'./manifest.webmanifest',",''],
  ['M01','js/core.mjs','action_log:demoActions()','action_log:[]'],
  ['M02','js/storage.mjs',"for(const name of stores) tx.objectStore(name).clear();","for(const name of ['checkins','shifts']) tx.objectStore(name).clear();"],
  ['C01','js/questions.mjs','prompt:locale.safety,',"prompt:'Wrong question',"],
