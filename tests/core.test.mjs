@@ -224,3 +224,31 @@ test('F05 both card headers use the short voluntary wording',()=>{
   const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
   assert.ok(app.includes("<p>${escape(t('cardHeader'))}</p>"));
 });
+
+import {validateAction,appendAction,currentActions,boardCSV,actionLogCSV,ACTION_COLUMNS,BOARD_COLUMNS,BOARD_NOTICE} from '../js/core.mjs';
+import {stationBoardHTML} from '../js/board.mjs';
+const action=()=>({id:'33333333-1234-4234-8234-123456789012',action_id:'44444444-1234-4234-8234-123456789012',synthetic:true,station:'S1',title:'Inspect lights',concern:'lighting',status:'planned',reason:'',updated_at:'2026-01-01T09:00:00.000Z'});
+test('B01 Not done needs a short reason and all board fields validate',()=>{
+  const r=action();assert.deepEqual(validateAction(r,[],now+'T12:00:00.000Z'),{});
+  for(const reason of ['', ' ', 'x'.repeat(161)]) assert.ok(validateAction({...r,status:'not-done',reason}).reason);
+  assert.deepEqual(validateAction({...r,status:'not-done',reason:'Visit rescheduled'},[],now+'T12:00:00.000Z'),{});
+  for(const [key,value] of [['title',''],['concern','unknown'],['status','unknown'],['station','S5'],['synthetic',false],['updated_at','2026-02-30T00:00:00.000Z']]) assert.ok(Object.keys(validateAction({...r,[key]:value})).length,key);
+});
+test('B02 status history is retained and current board uses latest date',()=>{
+  const first=action(),history=[first],snapshot=structuredClone(history),next={...first,id:'55555555-1234-4234-8234-123456789012',status:'checked',updated_at:'2026-01-02T09:00:00.000Z'};
+  const result=appendAction(history,next);assert.equal(result.length,2);assert.deepEqual(history,snapshot);assert.deepEqual(result[0],first);assert.deepEqual(currentActions(result,'S1'),[next]);assert.deepEqual(currentActions(result,'S2'),[]);
+  for(const bad of [{...next,title:'Changed title'},{...next,updated_at:first.updated_at},{...next,status:'planned'}]) assert.throws(()=>appendAction(history,bad));
+});
+test('B03 board and action log CSV have the specified columns and synthetic markers',()=>{
+  const demo=demoRecords();const [boardHeader,...rows]=parseCSV(boardCSV(demo.action_log,'S1'));
+  assert.deepEqual(boardHeader,BOARD_COLUMNS);assert.equal(rows.length,3);assert.ok(rows.every(r=>r[boardHeader.indexOf('synthetic')]==='true'));
+  const [logHeader,...logRows]=parseCSV(actionLogCSV(demo.action_log,'S1'));assert.deepEqual(logHeader,ACTION_COLUMNS);assert.equal(logRows.length,5);
+  const html=stationBoardHTML(demo.action_log,'S1',en);assert.ok(html.includes(BOARD_NOTICE));assert.ok(html.includes('2026-01-02'));assert.ok(html.includes('Synthetic record'));
+});
+test('B04 board log exports round trip and conflicts preserve append-only history',()=>{
+  const demo=demoRecords(),json=exportJSON(demo.checkins,demo.shifts,demo.action_log);
+  assert.deepEqual(prepareImport(json,'json',undefined,now).action_log,demo.action_log.slice().sort((a,b)=>a.updated_at.localeCompare(b.updated_at)));
+  const log=prepareImport(actionLogCSV(demo.action_log),'csv',undefined,now).action_log;assert.equal(log.length,20);
+  assert.equal(prepareImport(json,'json',demo,now).duplicates,636);
+  const changed=structuredClone(demo);changed.action_log[0].title='Conflict';assert.throws(()=>prepareImport(exportJSON([],[],changed.action_log),'json',demo,now),/conflict/);
+});

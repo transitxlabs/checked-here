@@ -1,12 +1,13 @@
+import {stationBoardHTML} from './board.mjs';
 import strings from './locales/en.mjs';
 import {questionsHTML,updateConditionalQuestions,conditionalAnswers} from './form.mjs';
-import {STATIONS,BANDS,today,validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,toCSV,SHIFT_COLUMNS,dictionaryCSV,dictionaryMarkdown,prepareImport,demoRecords} from './core.mjs';
+import {STATIONS,BANDS,CONCERNS,ACTION_STATUSES,currentActions,validateAction,boardCSV,actionLogCSV,today,validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,toCSV,SHIFT_COLUMNS,dictionaryCSV,dictionaryMarkdown,prepareImport,demoRecords} from './core.mjs';
 import {openStorage,readAll,addRecords,clearRecords} from './storage.mjs';
 const t = key => strings[key];
 const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const labelFor = value => t(value.replaceAll('-','_')) ?? value;
 const view=document.querySelector('#view'),status=document.querySelector('#status');
-let data={checkins:[],shifts:[]},route=new URL(location.href).searchParams.has('s')?'rider':'staff',lastExport=null,busy=false;
+let data={checkins:[],shifts:[],action_log:[]},route=new URL(location.href).searchParams.has('s')?'rider':location.hash.slice(1)||'home',lastExport=null,busy=false;
 const stationFromURL=new URL(location.href).searchParams.get('s');
 document.title=t('title');
 document.querySelectorAll('[data-text]').forEach(el=>el.textContent=t(el.dataset.text));
@@ -61,13 +62,14 @@ function recordFrom(form,staff) {
   return {id:crypto.randomUUID(),source:staff?'staff':'rider-link',synthetic:true,...(staff?contextFrom(form):{station:form.elements.station.value,round:null,date:today(),time_band:form.elements.time_band.value,staff_code:null}),card_number:staff?numberFrom(form,'card_number'):null,safety:numberFrom(form,'safety'),reasons:[...form.querySelectorAll('[name="reasons"]:checked')].map(el=>el.value),knows_help:form.elements.knows_help.value,noticed_board:form.elements.noticed_board.value,...conditionalAnswers(form.elements.noticed_board.value,form.elements.trust.value==='no-opinion'?'no-opinion':numberFrom(form,'trust'),form.elements.checked_meaning.value)};
 }
 function showErrors(form,errors) {
+  form.querySelector('.error-summary')?.remove();
   form.querySelectorAll('.error').forEach(el=>{el.hidden=true;el.textContent='';});
   form.querySelectorAll('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
   for(const [k,key] of Object.entries(errors)) {
     const el=form.querySelector(`[id$="error-${k}"]`); if(el) {el.textContent=t(key);el.hidden=false;}
     form.querySelectorAll(`[name="${k}"]`).forEach(el=>el.setAttribute('aria-invalid','true'));
   }
-  if(Object.keys(errors).length) { message('formErrors'); form.querySelector('[aria-invalid="true"]')?.focus(); return true; }
+  if(Object.keys(errors).length) { message('formErrors'); const summary=document.createElement('div');summary.className='error-summary';summary.setAttribute('role','alert');summary.innerHTML=`<p>${escape(t('formErrors'))}</p><ul>${Object.entries(errors).map(([k,key])=>{const field=form.querySelector(`[name="${k}"]`);return `<li><a href="#${field?.id??form.id}">${escape(t(key))}</a></li>`;}).join('')}</ul>`;form.prepend(summary);form.querySelector('[aria-invalid="true"]')?.focus(); return true; }
   return false;
 }
 function table(caption,headers,rows) { return `<div class="table-scroll" tabindex="0" role="region" aria-label="${escape(caption)}"><table><caption>${escape(caption)}</caption><thead><tr>${headers.map(h=>`<th scope="col">${escape(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map((v,i)=>i===0?`<th scope="row">${escape(v)}</th>`:`<td>${escape(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
@@ -81,7 +83,7 @@ function dataView() {
   view.innerHTML=`<h2>${escape(t('dataHeading'))}</h2><p>${escape(t('dataIntro'))}</p><p>${escape(t('prototype'))}</p><div class="actions">${['exportCSV','exportJSON','exportShifts','dictionaryCSV','dictionaryMD'].map(k=>`<button type="button" id="${k}">${escape(t(k))}</button>`).join('')}</div><form id="import"><label for="file">${escape(t('importLabel'))}</label><input id="file" type="file" accept=".csv,.json,text/csv,application/json" required><div class="actions"><button>${escape(t('importAction'))}</button></div></form><section><h2>${escape(t('demo'))}</h2><p>${escape(t('demoIntro'))}</p><button type="button" id="demo">${escape(t('demo'))}</button></section><section><h2>${escape(t('clear'))}</h2><p>${escape(t('clearIntro'))}</p><button type="button" class="danger" id="clear">${escape(t('clear'))}</button><form class="confirm" id="confirm" hidden><label class="check"><input type="checkbox" id="confirm-check" required>${escape(t('clearConfirm'))}</label><div class="actions"><button class="danger">${escape(t('clearAction'))}</button><button type="button" id="cancel">${escape(t('cancel'))}</button></div></form></section>`;
   for(const k of ['exportCSV','exportJSON','exportShifts','dictionaryCSV','dictionaryMD']) view.querySelector(`#${k}`).onclick=()=>run(async()=>{
     await refresh();
-    const actions={exportCSV:()=>download('checkins.csv',exportCSV(data.checkins),'text/csv'),exportJSON:()=>{const content=exportJSON(data.checkins,data.shifts);download('device-data.json',content,'application/json');lastExport=content;},exportShifts:()=>download('shifts.csv',toCSV(data.shifts,SHIFT_COLUMNS),'text/csv'),dictionaryCSV:()=>download('data-dictionary.csv',dictionaryCSV(),'text/csv'),dictionaryMD:()=>download('data-dictionary.md',dictionaryMarkdown(),'text/markdown')};
+    const actions={exportCSV:()=>download('checkins.csv',exportCSV(data.checkins),'text/csv'),exportJSON:()=>{const content=exportJSON(data.checkins,data.shifts,data.action_log);download('device-data.json',content,'application/json');lastExport=content;},exportShifts:()=>download('shifts.csv',toCSV(data.shifts,SHIFT_COLUMNS),'text/csv'),dictionaryCSV:()=>download('data-dictionary.csv',dictionaryCSV(),'text/csv'),dictionaryMD:()=>download('data-dictionary.md',dictionaryMarkdown(),'text/markdown')};
     actions[k](); message('exportDone');
   });
   view.querySelector('#import').onsubmit=event=>run(async()=>{
@@ -89,25 +91,62 @@ function dataView() {
     await refresh();
     try {
       const bundle=prepareImport(await file.text(),file.name.toLowerCase().endsWith('.csv')?'csv':'json',data);
-      await addRecords(bundle); if(bundle.checkins.length+bundle.shifts.length) lastExport=null; await refresh();
-      message('imported',{added:bundle.checkins.length+bundle.shifts.length,duplicates:bundle.duplicates});
+      await addRecords(bundle); if(bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0)) lastExport=null; await refresh();
+      message('imported',{added:bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0),duplicates:bundle.duplicates});
     } catch(e) {message('importFailed',{reason:t(e.message)??t('invalidFile')});}
   },event);
   view.querySelector('#demo').onclick=()=>run(async()=>{
-    await refresh(); const demo=demoRecords(),bundle=prepareImport(exportJSON(demo.checkins,demo.shifts),'json',data);
-    await addRecords(bundle); if(bundle.checkins.length+bundle.shifts.length) lastExport=null; await refresh(); message('demoDone',{added:bundle.checkins.length+bundle.shifts.length,duplicates:bundle.duplicates});
+    await refresh(); const demo=demoRecords(),bundle=prepareImport(exportJSON(demo.checkins,demo.shifts,demo.action_log),'json',data);
+    await addRecords(bundle); if(bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0)) lastExport=null; await refresh(); message('demoDone',{added:bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0),duplicates:bundle.duplicates});
   });
   view.querySelector('#clear').onclick=()=>run(async()=>{
-    await refresh(); if(lastExport!==exportJSON(data.checkins,data.shifts)) {message('clearNeedExport');return;}
+    await refresh(); if(lastExport!==exportJSON(data.checkins,data.shifts,data.action_log)) {message('clearNeedExport');return;}
     view.querySelector('#confirm').hidden=false; view.querySelector('#confirm-check').focus();
   });
   view.querySelector('#cancel').onclick=()=>{view.querySelector('#confirm').hidden=true;view.querySelector('#confirm-check').checked=false;view.querySelector('#clear').focus();};
   view.querySelector('#confirm').onsubmit=event=>run(async()=>{
     event.preventDefault(); if(!view.querySelector('#confirm-check').checked) return;
-    await refresh(); if(lastExport!==exportJSON(data.checkins,data.shifts)) {message('clearNeedExport');return;}
+    await refresh(); if(lastExport!==exportJSON(data.checkins,data.shifts,data.action_log)) {message('clearNeedExport');return;}
     await clearRecords(lastExport); lastExport=null; await refresh(); dataView(); message('cleared');
   },event);
 }
+
+let boardStation='S1';
+function boardView() {
+  const actions=currentActions(data.action_log,boardStation);
+  view.innerHTML=`<div class="no-print"><h2>${escape(t('boardRoute'))}</h2><p>${escape(t('boardIntro'))}</p><label for="board-station">${escape(t('boardStation'))}</label><select id="board-station">${STATIONS.map(s=>`<option ${s===boardStation?'selected':''}>${s}</option>`).join('')}</select><div class="actions"><button id="board-print">${escape(t('boardPrint'))}</button><button id="board-csv">${escape(t('exportBoard'))}</button><button id="log-csv">${escape(t('exportLog'))}</button></div></div>${stationBoardHTML(data.action_log,boardStation,strings)}<section class="no-print"><h2>${escape(t('boardForm'))}</h2><form id="board-form" novalidate><fieldset><legend>${escape(t('actionChoice'))}</legend><label for="action-choice">${escape(t('actionChoice'))}</label><select id="action-choice"><option value="">${escape(t('newAction'))}</option>${actions.map(r=>`<option value="${r.action_id}">${escape(r.title)}</option>`).join('')}</select></fieldset><div class="context"><div>${input('title','text','','maxlength="100"')}</div><div>${select('concern',CONCERNS)}</div></div><fieldset><legend>${escape(t('action_status'))}</legend>${select('action_status',ACTION_STATUSES)}</fieldset><div id="reason-wrap" hidden>${input('reason','text','','maxlength="160"')}</div><button type="submit">${escape(t('boardSave'))}</button></form></section><section class="no-print"><h2>${escape(t('actionLog'))}</h2>${table(t('actionLog'),[t('title'),t('action_status'),t('reason'),t('updated'),t('syntheticRecord')],data.action_log.filter(r=>r.station===boardStation).map(r=>[r.title,labelFor(r.status),r.reason,r.updated_at,t('syntheticRecord')]))}</section>`;
+  view.querySelector('#board-station').onchange=event=>run(async()=>{boardStation=event.target.value;await refresh();boardView();view.querySelector('#board-station').focus();});
+  view.querySelector('#board-print').onclick=()=>window.print();
+  view.querySelector('#board-csv').onclick=()=>run(async()=>{await refresh();download(`board-${boardStation}.csv`,boardCSV(data.action_log,boardStation),'text/csv');message('exportDone');});
+  view.querySelector('#log-csv').onclick=()=>run(async()=>{await refresh();download(`action-log-${boardStation}.csv`,actionLogCSV(data.action_log,boardStation),'text/csv');message('exportDone');});
+  const form=view.querySelector('#board-form');
+  const updateReason=()=>{const required=form.elements.action_status.value==='not-done';view.querySelector('#reason-wrap').hidden=!required;form.elements.reason.disabled=!required;form.elements.reason.required=required;if(!required)form.elements.reason.value='';};
+  form.elements.action_status.onchange=updateReason;updateReason();
+  view.querySelector('#action-choice').onchange=event=>{
+    const action=actions.find(r=>r.action_id===event.target.value);
+    form.elements.title.value=action?.title??'';form.elements.concern.value=action?.concern??'';
+    form.elements.title.readOnly=!!action;form.elements.concern.disabled=!!action;
+    form.elements.action_status.value='';updateReason();
+  };
+  form.onsubmit=event=>run(async()=>{
+    const action_id=view.querySelector('#action-choice').value||crypto.randomUUID();
+    await refresh();
+    const r={id:crypto.randomUUID(),action_id,synthetic:true,station:boardStation,title:form.elements.title.value.trim(),concern:form.elements.concern.value,status:form.elements.action_status.value,reason:form.elements.reason.value.trim(),updated_at:new Date().toISOString()};
+    const errors=validateAction(r,data.action_log);if(errors.status){errors.action_status=errors.status;delete errors.status;}
+    if(showErrors(form,errors))return;
+    await addRecords({action_log:[r]});lastExport=null;await refresh();boardView();message('boardSaved');view.querySelector('#action-choice').focus();
+  },event);
+}
+function home() {
+  view.innerHTML=`<div class="home"><p class="eyebrow">Checked Here / working demo</p><h2>${escape(t('homeIntro'))}</h2><div class="route-list">${[['staff','staffRoute','homeStaff'],['rider','riderRoute','homeRider'],['board','boardRoute','homeBoard']].map(([key,title,description],i)=>`<section><span class="route-number">0${i+1}</span><h3><a href="#${key}">${escape(t(title))}</a></h3><p>${escape(t(description))}</p></section>`).join('')}</div><p>Use the printable rider card, quota view and exports to explore the full workflow.</p><div class="actions"><button id="home-demo">${escape(t('demo'))}</button><a class="button" href="#card">${escape(t('cardRoute'))}</a></div><p class="hint">${escape(t('demoIntro'))}</p></div>`;
+  view.querySelector('#home-demo').onclick=()=>run(loadDemo);
+}
+async function loadDemo() {
+  await refresh();const demo=demoRecords(),bundle=prepareImport(exportJSON(demo.checkins,demo.shifts,demo.action_log),'json',data);
+  await addRecords(bundle);if(bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0))lastExport=null;
+  await refresh();message('demoDone',{added:bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0),duplicates:bundle.duplicates});
+}
+
 async function refresh() {data=await readAll();}
 async function run(action,event) {
   event?.preventDefault(); if(busy) return; busy=true;
@@ -116,13 +155,14 @@ async function run(action,event) {
 }
 function render() {
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===route?'page':'false'));
-  if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
+  if(route==='home') home(); else if(route==='board') boardView(); else if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
 }
-for(const [key,name] of [['staff','staffRoute'],['rider','riderRoute'],['quota','quotaRoute'],['data','dataRoute']]) {
+for(const [key,name] of [['home','homeRoute'],['staff','staffRoute'],['rider','riderRoute'],['board','boardRoute'],['quota','quotaRoute'],['data','dataRoute']]) {
   const b=document.createElement('button');b.type='button';b.textContent=t(name);b.dataset.route=key;
-  b.onclick=()=>run(async()=>{await refresh();route=key;status.textContent='';render();document.querySelector('#main').focus();});
+  b.onclick=()=>{location.hash=key;};
   document.querySelector('nav').append(b);
 }
+window.addEventListener('hashchange',()=>run(async()=>{await refresh();route=location.hash.slice(1)||'home';status.textContent='';render();document.querySelector('#main').focus();}));
 message('loading');
 try {await openStorage();await refresh();status.textContent='';render();} catch {message('storageError');document.querySelectorAll('nav button').forEach(b=>b.disabled=true);}
 const offline=document.querySelector('#offline');offline.textContent=t('offlinePreparing');

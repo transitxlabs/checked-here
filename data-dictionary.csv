@@ -32,3 +32,20 @@ shifts,time_band,enum,weekday-morning; weekday-midday; weekday-evening; weekend,
 shifts,staff_code,code,one capital letter and 2 to 4 digits,Pseudonymous staff code; empty for rider-link.
 shifts,asks,integer,non-negative integer,Number of asks in this shift.
 shifts,refusals,integer,non-negative integer,Number of refusals in this shift.
+board,action_id,UUID,"UUID, version 4",Stable action identifier shared by all its status events.
+board,synthetic,boolean,true,Synthetic practice data marker.
+board,station,enum,S1; S2; S3; S4,Placeholder station.
+board,title,text,1 to 100 characters; one line,Synthetic action title; fixed after creation.
+board,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
+board,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
+board,reason,text,1 to 160 characters for not-done; empty otherwise; one line,Selected reason indicator.
+board,updated_at,timestamp,ISO 8601 UTC timestamp; not in the future,Date and time of the status event. Board uses the latest event. Prior events are retained.
+action_log,id,UUID,"UUID, version 4",Stable record identifier used for cross-device duplicate detection.
+action_log,action_id,UUID,"UUID, version 4",Stable action identifier shared by all its status events.
+action_log,synthetic,boolean,true,Synthetic practice data marker.
+action_log,station,enum,S1; S2; S3; S4,Placeholder station.
+action_log,title,text,1 to 100 characters; one line,Synthetic action title; fixed after creation.
+action_log,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
+action_log,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
+action_log,reason,text,1 to 160 characters for not-done; empty otherwise; one line,Selected reason indicator.
+action_log,updated_at,timestamp,ISO 8601 UTC timestamp; not in the future,Date and time of the status event. Board uses the latest event. Prior events are retained.

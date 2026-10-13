@@ -32,5 +32,9 @@ export default [
  ['F03','js/form.mjs','control.required=asked','control.required=false'],
  ['F04','js/form.mjs',"trust:noticed_board==='yes'?trust:null",'trust'],
  ['F05','js/locales/en.mjs',"cardHeader: 'A short, voluntary card.'", "cardHeader: 'About one minute.'"],
+ ['B01','js/core.mjs',"r.status==='not-done' && !r.reason.trim()",'false'],
+ ['B02','js/core.mjs','return [...history,{...event}];','return [{...event}];'],
+ ['B03','js/core.mjs','toCSV(currentActions(history,station),BOARD_COLUMNS)','toCSV(currentActions(history,station),ACTION_COLUMNS)'],
+ ['B04','js/core.mjs','result.action_log.push(r);',''],
  ['O01','sw.js',"'./js/storage.mjs',",'']
 ];

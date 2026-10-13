@@ -5,6 +5,11 @@ export const REASONS = ['lighting', 'staff_nearby', 'crowding', 'too_few_people'
 export const ANSWERS = ['yes', 'no', 'not-sure'];
 export const CHECKED = ['on-site', 'rated-safe', 'not-sure'];
 export const COLUMNS = ['id', 'source', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'card_number', 'safety', ...REASONS.map(r => `reason_${r}`), 'knows_help', 'noticed_board', 'trust', 'checked_meaning'];
+export const ACTION_COLUMNS = ['id','action_id','synthetic','station','title','concern','status','reason','updated_at'];
+export const BOARD_COLUMNS = ['action_id','synthetic','station','title','concern','status','reason','updated_at'];
+export const ACTION_STATUSES = ['planned','checked','not-done'];
+export const CONCERNS = [...REASONS,'other'];
+export const BOARD_NOTICE = 'Checked means staff checked this action on site. It is not a safety rating.';
 export const SHIFT_COLUMNS = ['id', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'asks', 'refusals'];
 const recordKeys = ['id', 'source', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'card_number', 'safety', 'reasons', 'knows_help', 'noticed_board', 'trust', 'checked_meaning'];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -61,7 +66,7 @@ export function csvCell(v) { const s = v == null ? '' : String(v); return /[",\r
 export function toCSV(rows, columns) { return [columns, ...rows.map(r => columns.map(c => r[c]))].map(row => row.map(csvCell).join(',')).join('\r\n')+'\r\n'; }
 export function checkinRows(records) { return records.map(r => Object.fromEntries(COLUMNS.map(c => [c, c.startsWith('reason_') ? Number(r.reasons.includes(c.slice(7))) : r[c]]))); }
 export function exportCSV(records) { return toCSV(checkinRows(records), COLUMNS); }
-export function exportJSON(checkins, shifts = []) { return JSON.stringify({schema_version:1,checkins,shifts},null,2)+'\n'; }
+export function exportJSON(checkins, shifts = [], action_log) { return JSON.stringify({schema_version:1,checkins,shifts,...(action_log===undefined?{}:{action_log})},null,2)+'\n'; }
 export function parseCSV(text) {
   const rows = []; let row = [], cell = '', quoted = false, closed = false;
   text = text.replace(/^\uFEFF/,'');
@@ -81,6 +86,8 @@ export function parseCSV(text) {
 function sameKeys(o, keys) { return o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).length === keys.length && keys.every(k => Object.hasOwn(o,k)); }
 function csvBundle(text) {
   const [header,...rows] = parseCSV(text);
+  const board = header?.join(',') === ACTION_COLUMNS.join(',');
+  if(board) return {schema_version:1,checkins:[],shifts:[],action_log:rows.map(row=>{if(row.length!==header.length) throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true') throw Error('invalidSynthetic');r.synthetic=true;return r;})};
   const shift = header?.join(',') === SHIFT_COLUMNS.join(',');
   if (!shift && header?.join(',') !== COLUMNS.join(',')) throw Error('invalidFile');
   const records = rows.map(row => {
@@ -106,9 +113,9 @@ function canonical(r) { return JSON.stringify(Object.fromEntries(Object.keys(r).
 export function prepareImport(text, format, existing = {checkins:[],shifts:[]}, now=today()) {
   let bundle;
   try { bundle = format === 'csv' ? csvBundle(text) : JSON.parse(text); } catch(e) { throw Error(e.message === 'invalidSynthetic' ? e.message : 'invalidFile'); }
-  if (!sameKeys(bundle,['schema_version','checkins','shifts']) || bundle.schema_version !== 1 || !Array.isArray(bundle.checkins) || !Array.isArray(bundle.shifts)) throw Error('invalidFile');
+  if (!(sameKeys(bundle,['schema_version','checkins','shifts']) || sameKeys(bundle,['schema_version','checkins','shifts','action_log'])) || (bundle.action_log!==undefined && !Array.isArray(bundle.action_log)) || bundle.schema_version !== 1 || !Array.isArray(bundle.checkins) || !Array.isArray(bundle.shifts)) throw Error('invalidFile');
   const result={checkins:[],shifts:[],duplicates:0};
-  const ids=new Map([...existing.checkins,...existing.shifts].map(r=>[r.id,canonical(r)]));
+  const ids=new Map([...existing.checkins,...existing.shifts,...(existing.action_log??[])].map(r=>[r.id,canonical(r)]));
   const cards=new Map(existing.checkins.filter(r=>r.source==='staff').map(r=>[cardKey(r),canonical(r)]));
   for (const kind of ['checkins','shifts']) for (const r of bundle[kind]) {
     if (!sameKeys(r,kind === 'checkins' ? recordKeys : SHIFT_COLUMNS)) throw Error('invalidFile');
@@ -124,12 +131,22 @@ export function prepareImport(text, format, existing = {checkins:[],shifts:[]}, 
     }
     ids.set(r.id,signature); if(key) cards.set(key,signature); result[kind].push(r);
   }
+  if(bundle.action_log!==undefined) {
+    result.action_log=[];
+    const history=[...(existing.action_log??[])];
+    for(const r of [...bundle.action_log].sort((a,b)=>String(a.updated_at).localeCompare(String(b.updated_at)))) {
+      if(ids.has(r.id)) {if(ids.get(r.id)!==canonical(r)) throw Error('conflict');result.duplicates++;continue;}
+      if(Object.keys(validateAction(r,history,now+'T23:59:59.999Z')).length) throw Error('invalidFile');
+      ids.set(r.id,canonical(r));history.push(r);result.action_log.push(r);
+    }
+  }
   return result;
 }
 export function dictionary(locale=en) {
   const typeFor=c => c==='id'?'uuid':c==='synthetic'?'boolean':c==='date'?'date':c==='staff_code'?'code':(c.startsWith('reason_')?'binary':['round','card_number','safety','asks','refusals'].includes(c)?'integer':'enum');
   const allowedFor=c => c.startsWith('reason_')?'binary':({id:'uuid',source:'source',synthetic:'synthetic',station:'station',round:'round',date:'date',time_band:'band',staff_code:'staff',card_number:'card',safety:'safety',knows_help:'answer',noticed_board:'answer',trust:'trust',checked_meaning:'checked',asks:'count',refusals:'count'}[c]);
-  return [['checkins',COLUMNS],['shifts',SHIFT_COLUMNS]].flatMap(([dataset,cols])=>cols.map(column=>({dataset,column,type:locale[`t_${typeFor(column)}`],allowed_values:locale[`a_${dataset==='shifts'&&column==='round'?'shift_round':dataset==='shifts'&&column==='staff_code'?'shift_staff':allowedFor(column)}`],description:locale[`d_${column.startsWith('reason_')?'reason':column}`]})));
+  const base=[['checkins',COLUMNS],['shifts',SHIFT_COLUMNS]].flatMap(([dataset,cols])=>cols.map(column=>({dataset,column,type:locale[`t_${typeFor(column)}`],allowed_values:locale[`a_${dataset==='shifts'&&column==='round'?'shift_round':dataset==='shifts'&&column==='staff_code'?'shift_staff':allowedFor(column)}`],description:locale[`d_${column.startsWith('reason_')?'reason':column}`]})));
+  return [...base,...[['board',BOARD_COLUMNS],['action_log',ACTION_COLUMNS]].flatMap(([dataset,columns])=>columns.map(column=>({dataset,column,type:locale[`t_${['id','action_id'].includes(column)?'uuid':column==='synthetic'?'boolean':['title','reason'].includes(column)?'text':column==='updated_at'?'timestamp':'enum'}`],allowed_values:locale[`a_${['id','action_id'].includes(column)?'uuid':column}`],description:locale[`d_${column}`]})))];
 }
 export function dictionaryCSV(locale=en) { return toCSV(dictionary(locale),['dataset','column','type','allowed_values','description']); }
 export function dictionaryMarkdown(locale=en) { return `# ${locale.dictionaryTitle}\n\n| ${locale.dataset} | ${locale.column} | ${locale.type} | ${locale.allowed} | ${locale.description} |\n| --- | --- | --- | --- | --- |\n`+dictionary(locale).map(r=>`| ${Object.values(r).join(' | ')} |`).join('\n')+'\n'; }
@@ -147,5 +164,44 @@ export function demoRecords() {
     const noticed_board=ANSWERS[(STATIONS.indexOf(station)+i)%3];
     checkins.push({id:id(),source:'rider-link',synthetic:true,station,round:null,date:'2026-01-01',time_band:'weekend',staff_code:null,card_number:null,safety:7,reasons:['lighting'],knows_help:'yes',noticed_board,trust:noticed_board==='yes'?'no-opinion':null,checked_meaning:noticed_board==='yes'?'not-sure':null});
   }
-  return {checkins,shifts};
+  return {checkins,shifts,action_log:demoActions()};
+}
+
+// Each event is a complete synthetic action snapshot. Only new events are added.
+export function validateAction(r, history=[], now=new Date().toISOString()) {
+  const e={};
+  if(!r || !sameKeys(r,ACTION_COLUMNS) || !uuid.test(r.id??'') || !uuid.test(r.action_id??'')) return {record:'invalidRecord'};
+  if(r.synthetic!==true) e.synthetic='invalidSynthetic';
+  if(!STATIONS.includes(r.station)) e.station='invalidStation';
+  if(typeof r.title!=='string' || !r.title.trim() || r.title.length>100 || /[\r\n]/.test(r.title)) e.title='invalidTitle';
+  if(!CONCERNS.includes(r.concern)) e.concern='invalidConcern';
+  if(!ACTION_STATUSES.includes(r.status)) e.status='invalidStatus';
+  if(typeof r.reason!=='string' || r.reason.length>160 || /[\r\n]/.test(r.reason) || (r.status==='not-done' && !r.reason.trim()) || (r.status!=='not-done' && r.reason!=='')) e.reason='invalidReason';
+  if(typeof r.updated_at!=='string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(r.updated_at) || Number.isNaN(Date.parse(r.updated_at)) || new Date(r.updated_at).toISOString()!==r.updated_at || r.updated_at>now) e.updated_at='invalidTimestamp';
+  if(history.some(x=>x.id===r.id)) e.record='invalidRecord';
+  const previous=currentActions(history).find(x=>x.action_id===r.action_id);
+  if(previous && (['station','title','concern','synthetic'].some(k=>previous[k]!==r[k]) || r.updated_at<=previous.updated_at || r.status===previous.status)) e.record='invalidHistory';
+  return e;
+}
+export function appendAction(history,event,now) {
+  if(Object.keys(validateAction(event,history,now)).length) throw Error('invalidHistory');
+  return [...history,{...event}];
+}
+export function currentActions(history,station) {
+  const latest=new Map();
+  for(const event of history) if(!latest.has(event.action_id) || event.updated_at>latest.get(event.action_id).updated_at) latest.set(event.action_id,event);
+  return [...latest.values()].filter(r=>!station || r.station===station).sort((a,b)=>a.station.localeCompare(b.station)||a.title.localeCompare(b.title));
+}
+export function boardCSV(history,station) {return toCSV(currentActions(history,station),BOARD_COLUMNS);}
+export function actionLogCSV(history,station) {return toCSV(history.filter(r=>!station || r.station===station),ACTION_COLUMNS);}
+export function demoActions() {
+  const rows=[];let n=700;
+  const id=()=>`00000000-0000-4000-8000-${String(n++).padStart(12,'0')}`;
+  for(const station of STATIONS) for(const [i,status] of ACTION_STATUSES.entries()) {
+    const action_id=id();
+    const base={action_id,synthetic:true,station,title:['Review platform lighting','Check information display','Arrange upkeep visit'][i],concern:['lighting','information','cleanliness'][i],reason:''};
+    rows.push({...base,id:id(),status:'planned',updated_at:'2026-01-01T09:00:00.000Z'});
+    if(status!=='planned') rows.push({...base,id:id(),status,reason:status==='not-done'?'Synthetic example: visit rescheduled.':'',updated_at:'2026-01-02T14:30:00.000Z'});
+  }
+  return rows;
 }
