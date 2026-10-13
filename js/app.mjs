@@ -96,10 +96,7 @@ function dataView() {
       message('imported',{added:bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0),duplicates:bundle.duplicates});
     } catch(e) {message('importFailed',{reason:t(e.message)??t('invalidFile')});}
   },event);
-  view.querySelector('#demo').onclick=()=>run(async()=>{
-    await refresh(); const demo=demoRecords(),bundle=prepareImport(exportJSON(demo.checkins,demo.shifts,demo.action_log),'json',data);
-    await addRecords(bundle); if(bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0)) lastExport=null; await refresh(); message('demoDone',{added:bundle.checkins.length+bundle.shifts.length+(bundle.action_log?.length??0),duplicates:bundle.duplicates});
-  });
+  view.querySelector('#demo').onclick=()=>run(loadDemo);
   view.querySelector('#clear').onclick=()=>run(async()=>{
     await refresh(); if(lastExport!==exportJSON(data.checkins,data.shifts,data.action_log)) {message('clearNeedExport');return;}
     view.querySelector('#confirm').hidden=false; view.querySelector('#confirm-check').focus();

@@ -262,3 +262,27 @@ test('C01 printable card and both forms use the same six-question source',()=>{
   assert.equal(questions[0].prompt,'How safe do you feel at this station right now?');assert.equal(questions[1].prompt,'What affects how safe you feel here today? Tick up to 3.');assert.equal(questions[4].prompt,'How much do you trust the updates posted at this station?');
   for(const module of ['form','card'])assert.ok(readFileSync(new URL(`../js/${module}.mjs`,import.meta.url),'utf8').includes('questionSource(locale)'));
 });
+
+import {storageDouble} from './helpers/storage.mjs';
+import {openStorage,readAll,addRecords,clearRecords} from '../js/storage.mjs';
+test('M01 demo spans four stations two rounds and dated synthetic board states',()=>{
+  const demo=demoRecords();assert.equal(demo.action_log.length,20);assert.equal(currentActions(demo.action_log).length,12);
+  for(const station of ['S1','S2','S3','S4']) {
+    assert.deepEqual([...new Set(demo.checkins.filter(r=>r.station===station&&r.source==='staff').map(r=>r.round))].sort(),[1,2]);
+    assert.deepEqual(currentActions(demo.action_log,station).map(r=>r.status).sort(),['checked','not-done','planned']);
+  }
+  for(const r of [...demo.checkins,...demo.shifts,...demo.action_log])assert.equal(r.synthetic,true);
+  assert.ok(demo.action_log.every(r=>r.updated_at.startsWith('2026-01-')));
+});
+test('M02 loading and clearing retains transaction safeguards and clears every dataset',async()=>{
+  const previous=globalThis.indexedDB;globalThis.indexedDB=storageDouble();
+  try {
+    await openStorage();const demo=demoRecords();await addRecords(demo);
+    let data=await readAll();assert.equal(data.checkins.length,608);assert.equal(data.shifts.length,8);assert.equal(data.action_log.length,20);
+    const snapshot=exportJSON(data.checkins,data.shifts,data.action_log);
+    await addRecords({action_log:[action()]});
+    await assert.rejects(clearRecords(snapshot),/clearNeedExport/);data=await readAll();assert.equal(data.action_log.length,21);assert.equal(data.checkins.length,608);
+    await clearRecords(exportJSON(data.checkins,data.shifts,data.action_log));
+    assert.deepEqual(await readAll(),{checkins:[],shifts:[],action_log:[]});
+  } finally {globalThis.indexedDB=previous;}
+});
