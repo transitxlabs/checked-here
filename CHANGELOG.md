@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-10-13
+
+- Vancouver times now follow British Columbia's year-round Pacific Time: UTC-7 from 8 March 2026, with no fall back on 1 November 2026. Version 1.1.0 wrongly applied a fall back on that date; a new test and planted fault cover the rule.
+
 ## 1.1.0 - 2026-10-13
 
 - Made the station board a poster with a large station heading, newest update, a short legend and ordered action cards.

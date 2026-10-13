@@ -28,7 +28,7 @@ The home screen explains the three capture and board routes. Choose **Load synth
 
 The home screen includes **How a pilot would use this** in four steps: riders fill the card, staff record actions, the board shows what was checked, and the next card round asks whether riders noticed and trust the board.
 
-The synthetic 2026 Vancouver calendar uses the seasonal clock changes specified for this demonstration, including the repeated hour on 1 November. This rule is pinned because installed time-zone databases differ. It is a demonstration calendar, not a claim about current civil-time rules. Other years and listed station zones use the installed time-zone database.
+Vancouver times follow British Columbia's year-round Pacific Time: clocks moved to UTC-7 on 8 March 2026 and do not fall back on 1 November 2026 (Province of British Columbia news release of 17 September 2026, "Pacific Time: PCT"). Some installed time-zone databases still fall back, so the demo pins Vancouver to UTC-7 from 8 March 2026 onward. Earlier years and the other listed station zones use the installed time-zone database.
 
 The **Printable rider card** and both forms use one six-question source. Wording follows the supplied draft v2.1. The emergency line says "Emergency: call 911." The non-emergency help line and collection notice remain placeholders. Questions 5 and 6 are shown and required only after Yes on question 4. Switching away from Yes clears them; unasked answers are stored as null and exported as empty CSV cells. Forms reject future dates, invalid ranges and unsupported fields. Select 1 to 3 distinct question 2 reasons.
 
@@ -71,7 +71,7 @@ The retained version 1.1 run passed 50 tests, detected all 50 planted semantic f
 
 To repeat the browser script, set `BROWSER_LIBRARY` to an existing local browser automation module and `AXE_LIBRARY` to an existing local `axe.min.js`, then run `node scripts/browser-checks.mjs`. Set `CHROME_EXECUTABLE` if Chrome is at another location. After generating PDFs, `python3 scripts/print-checks.py` inspects every page using an existing local PDF reader. The script uses a temporary browser profile and a loopback server; it stops its server and browser after checking.
 
-`BUILD_REPORT.md` and `SHA256SUMS` are uncommitted post-commit receipts. They record the final commit, observed checks and exact file hashes. The passing suite retains the original rules and adds station-local date formatting, the 1 November 2026 repeated hour, board ordering, symbol and word pairing, print banners and sizes, and the action log scroll region. The browser script checks actual 320 px page width and arrow-key scrolling as well as the wider layouts.
+`BUILD_REPORT.md` and `SHA256SUMS` are uncommitted post-commit receipts. They record the final commit, observed checks and exact file hashes. The passing suite retains the original rules and adds station-local date formatting, Vancouver staying at UTC-7 through 1 November 2026 and the following winter, board ordering, symbol and word pairing, print banners and sizes, and the action log scroll region. The browser script checks actual 320 px page width and arrow-key scrolling as well as the wider layouts.
 
 All question wording and translated display strings live in `js/locales/en.mjs`. The second locale has matching keys marked `translation pending`; it is not an available translated language. Approved translations and further accessibility review are required before real use. Help lines and the collection notice deliberately remain unfinished.
 

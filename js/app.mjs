@@ -182,9 +182,9 @@ if('serviceWorker' in navigator) {
     // Registration checks for a version change. Cache only local static assets.
     await navigator.serviceWorker.ready;
     if(!navigator.serviceWorker.controller) await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
-    const cache=await caches.open('transitx-checkin-v1.1.0');
+    const cache=await caches.open('transitx-checkin-v1.1.1');
     if(await cache.match(new URL('./js/card.mjs',location.href))) offline.textContent=t('offlineReady');
     else offline.textContent=t('offlinePreparing');
-    navigator.serviceWorker.addEventListener('controllerchange',async()=>{const updated=await caches.open('transitx-checkin-v1.1.0');if(await updated.match(new URL('./js/card.mjs',location.href)))offline.textContent=t('offlineReady');});
+    navigator.serviceWorker.addEventListener('controllerchange',async()=>{const updated=await caches.open('transitx-checkin-v1.1.1');if(await updated.match(new URL('./js/card.mjs',location.href)))offline.textContent=t('offlineReady');});
   } catch {offline.textContent=t('offlineError');}
 } else offline.textContent=t('offlineError');

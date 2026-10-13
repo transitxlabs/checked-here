@@ -1,12 +1,13 @@
 export const DEFAULT_TIME_ZONE='America/Vancouver';
 export const TIME_ZONES=['America/Vancouver','America/Edmonton','America/Winnipeg','America/Toronto','America/Halifax','America/St_Johns'];
-// The synthetic 2026 calendar is pinned to the brief's seasonal clock changes.
-// Browser and server time-zone databases can otherwise disagree about that year.
+// British Columbia keeps UTC-7 all year: clocks moved ahead on 8 March 2026 and do not fall back on 1 November 2026
+// (Province of British Columbia news release of 17 September 2026, "Pacific Time: PCT"). Some installed time-zone
+// databases still fall back, so Vancouver times from 2026 on are pinned here; other zones use the installed database.
+const VANCOUVER_PINNED_FROM=Date.parse('2026-01-01T08:00:00.000Z'),VANCOUVER_UTC7_FROM=Date.parse('2026-03-08T10:00:00.000Z');
 function calendar(timestamp,timeZone) {
   const date=new Date(timestamp),instant=date.getTime();
-  if(timeZone==='America/Vancouver' && date.getUTCFullYear()===2026) {
-    const daylight=instant>=Date.parse('2026-03-08T10:00:00.000Z')&&instant<Date.parse('2026-11-01T09:00:00.000Z');
-    return {date:new Date(instant+(daylight?-7:-8)*3600000),timeZone:'Etc/UTC'};
+  if(timeZone==='America/Vancouver' && instant>=VANCOUVER_PINNED_FROM) {
+    return {date:new Date(instant+(instant>=VANCOUVER_UTC7_FROM?-7:-8)*3600000),timeZone:'Etc/UTC'};
   }
   return {date,timeZone};
 }

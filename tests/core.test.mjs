@@ -293,7 +293,7 @@ test('O02 offline cache covers every page module manifest and icon',()=>{
   const assets=['index.html','styles.css','icon.svg','manifest.webmanifest',...readdirSync(new URL('icons/',root)).map(f=>`icons/${f}`)];
   const walk=(dir)=>{for(const file of readdirSync(new URL(dir+'/',root),{withFileTypes:true})){const path=`${dir}/${file.name}`;if(file.isDirectory())walk(path);else assets.push(path);}};walk('js');
   for(const file of assets)assert.ok(worker.includes(`'./${file}'`),file);
-  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.1.0'"));assert.ok(!worker.includes('fetch(event.request)'));
+  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.1.1'"));assert.ok(!worker.includes('fetch(event.request)'));
   const manifest=JSON.parse(readFileSync(new URL('manifest.webmanifest',root),'utf8'));assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.icons.length,3);
 });
 
@@ -304,7 +304,7 @@ test('O03 worker installs assets deletes old caches and serves relative paths of
   const self={location:{origin:'http://localhost',href:base+'sw.js'},addEventListener:(type,handler)=>handlers[type]=handler,skipWaiting:async()=>{skipped=true;},clients:{claim:async()=>{claimed=true;}}};
   runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),{self,caches,URL,Response});
   const lifecycle=async type=>{let work;handlers[type]({waitUntil:promise=>work=promise});await work;};await lifecycle('install');await lifecycle('activate');
-  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.1.0','unrelated-cache']);
+  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.1.1','unrelated-cache']);
   const request=async(url,mode)=>{let response;handlers.fetch({request:{method:'GET',url,mode},respondWith:promise=>response=promise});return await response;};
   assert.equal(await(await request(base+'?s=S2','navigate')).text(),'cached ./index.html');assert.equal((await request(base+'js/card.mjs','cors')).status,200);assert.equal((await request(base+'missing.txt','cors')).status,404);assert.equal((await request('https://example.invalid/','cors')).status,403);
 });
@@ -319,14 +319,18 @@ test('P01 station dates use plain words and the selected local zone',()=>{
   const html=stationBoardHTML([{...action(),updated_at:'2026-01-02T22:30:00.000Z'}],'S1',en);
   assert.ok(html.includes('Last updated: <time'));assert.ok(html.includes('2 January 2026, 2:30 p.m.'));assert.ok(!html.includes(' UTC'));
 });
-test('P02 daylight time falls back on 1 November 2026 without changing the instant',()=>{
+test('P02 Vancouver moves to UTC-7 on 8 March 2026 without changing the instant',()=>{
   assert.equal(offsetTimestamp('2026-03-08T09:59:59.000Z'),'2026-03-08T01:59:59.000-08:00');
   assert.equal(offsetTimestamp('2026-03-08T10:00:00.000Z'),'2026-03-08T03:00:00.000-07:00');
-  const before='2026-11-01T08:30:00.000Z',after='2026-11-01T09:30:00.000Z';
-  assert.equal(stationDate(before),'1 November 2026, 1:30 a.m.');assert.equal(stationDate(after),'1 November 2026, 1:30 a.m.');
-  assert.equal(offsetTimestamp(before),'2026-11-01T01:30:00.000-07:00');
-  assert.equal(offsetTimestamp(after),'2026-11-01T01:30:00.000-08:00');
   assert.equal(offsetTimestamp('2026-11-01T09:30:00.000Z','America/St_Johns'),'2026-11-01T06:00:00.000-03:30');
+});
+test('P09 Vancouver does not fall back on 1 November 2026 and stays at UTC-7 in winter',()=>{
+  const before='2026-11-01T08:30:00.000Z',after='2026-11-01T09:30:00.000Z';
+  assert.equal(stationDate(before),'1 November 2026, 1:30 a.m.');assert.equal(stationDate(after),'1 November 2026, 2:30 a.m.');
+  assert.equal(offsetTimestamp(before),'2026-11-01T01:30:00.000-07:00');
+  assert.equal(offsetTimestamp(after),'2026-11-01T02:30:00.000-07:00');
+  assert.equal(offsetTimestamp('2027-01-15T19:00:00.000Z'),'2027-01-15T12:00:00.000-07:00');
+  assert.equal(stationDate('2027-01-15T19:00:00.000Z'),'15 January 2027, 12:00 p.m.');
 });
 test('P03 board groups statuses and orders the latest snapshots newest first',()=>{
   const statuses=['not-done','planned','checked','checked','planned','not-done'];

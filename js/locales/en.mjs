@@ -3,7 +3,7 @@ export default {
   lastUpdated: 'Last updated', statusChanged: 'Status last changed', youToldUs: 'You told us:', why: 'Why:',
   noUpdates: 'No updates yet', localTime: 'Station local time', statusLegend: 'Action status legend',
   riderInvitation: 'Tell us how safe you feel: [rider form link or code goes here]',
-  demoCalendar: 'The synthetic 2026 Vancouver calendar uses seasonal clock changes, including 1 November.',
+  demoCalendar: 'Vancouver times follow British Columbia year-round Pacific Time: UTC-7 from 8 March 2026, with no change on 1 November.',
   boardTimeZone: 'Station time zone', printSize: 'Board print layout',
   letterPortrait: 'Letter portrait', tabloidLandscape: 'Tabloid landscape',
   logScrollHint: 'If needed, focus this table and use arrow keys to scroll.',

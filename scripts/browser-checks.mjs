@@ -206,7 +206,7 @@ try {
   }
   await go(page,'board');
   await page.emulateMedia({media:'screen',colorScheme:'light'});
-  const cache=await page.evaluate(async()=>({keys:await caches.keys(),files:(await(await caches.open('transitx-checkin-v1.1.0')).keys()).map(r=>new URL(r.url).pathname)}));results.cache=cache;assert.deepEqual(cache.keys,['transitx-checkin-v1.1.0']);
+  const cache=await page.evaluate(async()=>({keys:await caches.keys(),files:(await(await caches.open('transitx-checkin-v1.1.1')).keys()).map(r=>new URL(r.url).pathname)}));results.cache=cache;assert.deepEqual(cache.keys,['transitx-checkin-v1.1.1']);
   await stopServer();
   for(const route of routes) {
     await go(page,route);await page.reload();await waitReady(page);const width=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));results.offline.push({route,reloaded:true,offlineReady:await page.locator('#offline').textContent(),heading:await page.locator('#view h2').first().textContent(),...width});assert.equal(width.width,width.scrollWidth);

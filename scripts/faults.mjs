@@ -49,5 +49,6 @@ export default [
  ['P06','js/board.mjs','tabindex="0" role="region"','tabindex="-1" role="region"'],
  ['P07','js/core.mjs','updated_at:offsetTimestamp(r.updated_at,timeZone)','updated_at:r.updated_at'],
  ['P08','styles.css','page:boardTabloid; font-size:18pt;','page:boardTabloid; font-size:12pt;'],
+ ['P09','js/dates.mjs','instant>=VANCOUVER_UTC7_FROM?-7:-8','instant>=VANCOUVER_UTC7_FROM&&instant<Date.parse(\'2026-11-01T09:00:00.000Z\')?-7:-8'],
  ['O01','sw.js',"'./js/storage.mjs',",'']
 ];
