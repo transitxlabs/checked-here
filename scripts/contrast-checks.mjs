@@ -7,5 +7,5 @@ const ratio=(a,b)=>{const values=[luminance(a),luminance(b)].sort((x,y)=>y-x);re
 const pairs=[['ink','surface'],['ink','paper'],['ink','soft'],['muted','surface'],['muted','paper'],['muted','soft'],['accent','surface'],['on-accent','accent'],['error','surface'],['error','paper'],['on-accent','error'],['paper','ink']];
 const results=[];
 for(const [scheme,block] of blocks){const colours=Object.fromEntries([...block.matchAll(/--([a-z-]+):\s*(#[0-9a-f]{3,6})/gi)].map(m=>[m[1],m[2]]));for(const [foreground,background] of pairs){const measured=ratio(colours[foreground],colours[background]);results.push({scheme,foreground,background,foregroundColour:colours[foreground],backgroundColour:colours[background],ratio:Number(measured.toFixed(3)),passes:measured>=4.5});assert.ok(measured>=4.5,`${scheme} ${foreground}/${background}: ${measured}`);}}
-writeFileSync(new URL('../evidence/v1-contrast-results.json',import.meta.url),JSON.stringify(results,null,2)+'\n');
+writeFileSync(new URL('../evidence/v1.1-contrast-results.json',import.meta.url),JSON.stringify(results,null,2)+'\n');
 process.stdout.write(`${results.length} text colour pairs pass 4.5:1 in light and dark schemes. Minimum: ${Math.min(...results.map(r=>r.ratio))}:1.\n`);

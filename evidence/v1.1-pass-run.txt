@@ -1,0 +1,310 @@
+TAP version 13
+# Subtest: V01 required answers and permitted choices
+ok 1 - V01 required answers and permitted choices
+  ---
+  duration_ms: 3.360041
+  type: 'test'
+  ...
+# Subtest: V02 numeric safety and trust ranges
+ok 2 - V02 numeric safety and trust ranges
+  ---
+  duration_ms: 0.150958
+  type: 'test'
+  ...
+# Subtest: V03 one to three distinct listed reasons
+ok 3 - V03 one to three distinct listed reasons
+  ---
+  duration_ms: 0.107167
+  type: 'test'
+  ...
+# Subtest: V04 future and impossible dates
+ok 4 - V04 future and impossible dates
+  ---
+  duration_ms: 0.065875
+  type: 'test'
+  ...
+# Subtest: V05 card uniqueness scoped to station and round
+ok 5 - V05 card uniqueness scoped to station and round
+  ---
+  duration_ms: 0.080459
+  type: 'test'
+  ...
+# Subtest: V06 rider route has no staff identifiers
+ok 6 - V06 rider route has no staff identifiers
+  ---
+  duration_ms: 0.052375
+  type: 'test'
+  ...
+# Subtest: V07 shift counts and refusal constraint
+ok 7 - V07 shift counts and refusal constraint
+  ---
+  duration_ms: 0.185916
+  type: 'test'
+  ...
+# Subtest: Q01 staffed quota excludes rider links and splits bands
+ok 8 - Q01 staffed quota excludes rider links and splits bands
+  ---
+  duration_ms: 0.131083
+  type: 'test'
+  ...
+# Subtest: Q02 rider counts are separate
+ok 9 - Q02 rider counts are separate
+  ---
+  duration_ms: 0.270166
+  type: 'test'
+  ...
+# Subtest: E01 CSV has all columns and binary reasons
+ok 10 - E01 CSV has all columns and binary reasons
+  ---
+  duration_ms: 0.928208
+  type: 'test'
+  ...
+# Subtest: E02 CSV quoting and malformed inputs
+ok 11 - E02 CSV quoting and malformed inputs
+  ---
+  duration_ms: 0.230083
+  type: 'test'
+  ...
+# Subtest: E03 JSON schema preserves check-ins and shifts
+ok 12 - E03 JSON schema preserves check-ins and shifts
+  ---
+  duration_ms: 1.496167
+  type: 'test'
+  ...
+# Subtest: D01 dictionary lists every column with type and values
+ok 13 - D01 dictionary lists every column with type and values
+  ---
+  duration_ms: 1.146959
+  type: 'test'
+  ...
+# Subtest: I01 repeated IDs and card keys are detected
+ok 14 - I01 repeated IDs and card keys are detected
+  ---
+  duration_ms: 0.508125
+  type: 'test'
+  ...
+# Subtest: I02 conflicts abort and input data stays unchanged
+ok 15 - I02 conflicts abort and input data stays unchanged
+  ---
+  duration_ms: 0.261209
+  type: 'test'
+  ...
+# Subtest: I03 malformed imports and personal fields are rejected
+ok 16 - I03 malformed imports and personal fields are rejected
+  ---
+  duration_ms: 0.3345
+  type: 'test'
+  ...
+# Subtest: S01 synthetic demo fills 600 staffed and 8 separate riders
+ok 17 - S01 synthetic demo fills 600 staffed and 8 separate riders
+  ---
+  duration_ms: 7.011709
+  type: 'test'
+  ...
+# Subtest: L01 second locale has matching pending keys
+ok 18 - L01 second locale has matching pending keys
+  ---
+  duration_ms: 0.153167
+  type: 'test'
+  ...
+# Subtest: O01 service worker caches every runtime module
+ok 19 - O01 service worker caches every runtime module
+  ---
+  duration_ms: 0.151375
+  type: 'test'
+  ...
+# Subtest: V08 questions 5 and 6 required after Yes on both routes
+ok 20 - V08 questions 5 and 6 required after Yes on both routes
+  ---
+  duration_ms: 0.0925
+  type: 'test'
+  ...
+# Subtest: V09 questions 5 and 6 empty and not required otherwise
+ok 21 - V09 questions 5 and 6 empty and not required otherwise
+  ---
+  duration_ms: 0.054167
+  type: 'test'
+  ...
+# Subtest: V10 values when question 4 is not Yes rejected on save
+ok 22 - V10 values when question 4 is not Yes rejected on save
+  ---
+  duration_ms: 0.148375
+  type: 'test'
+  ...
+# Subtest: I04 questions 5 and 6 required after Yes on import
+ok 23 - I04 questions 5 and 6 required after Yes on import
+  ---
+  duration_ms: 0.356542
+  type: 'test'
+  ...
+# Subtest: I05 empty conditional answers round trip on import
+ok 24 - I05 empty conditional answers round trip on import
+  ---
+  duration_ms: 0.270292
+  type: 'test'
+  ...
+# Subtest: I06 values when question 4 is not Yes rejected on import
+ok 25 - I06 values when question 4 is not Yes rejected on import
+  ---
+  duration_ms: 0.94025
+  type: 'test'
+  ...
+# Subtest: E04 conditional answers export as empty CSV cells
+ok 26 - E04 conditional answers export as empty CSV cells
+  ---
+  duration_ms: 0.111292
+  type: 'test'
+  ...
+# Subtest: D02 dictionary explains conditional answers and emptiness
+ok 27 - D02 dictionary explains conditional answers and emptiness
+  ---
+  duration_ms: 0.2145
+  type: 'test'
+  ...
+# Subtest: S02 demo has all question 4 choices and consistent follow-ups
+ok 28 - S02 demo has all question 4 choices and consistent follow-ups
+  ---
+  duration_ms: 0.710583
+  type: 'test'
+  ...
+# Subtest: F01 rider help-line placeholder before the first question
+ok 29 - F01 rider help-line placeholder before the first question
+  ---
+  duration_ms: 0.362833
+  type: 'test'
+  ...
+# Subtest: F02 rider urgent-help notice before the first question
+ok 30 - F02 rider urgent-help notice before the first question
+  ---
+  duration_ms: 0.089458
+  type: 'test'
+  ...
+# Subtest: F03 conditional form hides clears and requires follow-ups
+ok 31 - F03 conditional form hides clears and requires follow-ups
+  ---
+  duration_ms: 0.259166
+  type: 'test'
+  ...
+# Subtest: F04 form stores null conditional answers when not asked
+ok 32 - F04 form stores null conditional answers when not asked
+  ---
+  duration_ms: 0.180166
+  type: 'test'
+  ...
+# Subtest: F05 both card headers use the short voluntary wording
+ok 33 - F05 both card headers use the short voluntary wording
+  ---
+  duration_ms: 0.070333
+  type: 'test'
+  ...
+# Subtest: B01 Not done needs a short reason and all board fields validate
+ok 34 - B01 Not done needs a short reason and all board fields validate
+  ---
+  duration_ms: 0.334833
+  type: 'test'
+  ...
+# Subtest: B02 status history is retained and current board uses latest date
+ok 35 - B02 status history is retained and current board uses latest date
+  ---
+  duration_ms: 0.142541
+  type: 'test'
+  ...
+# Subtest: B03 board and action log CSV have the specified columns and synthetic markers
+ok 36 - B03 board and action log CSV have the specified columns and synthetic markers
+  ---
+  duration_ms: 11.245625
+  type: 'test'
+  ...
+# Subtest: B04 board log exports round trip and conflicts preserve append-only history
+ok 37 - B04 board log exports round trip and conflicts preserve append-only history
+  ---
+  duration_ms: 23.843833
+  type: 'test'
+  ...
+# Subtest: C01 printable card and both forms use the same six-question source
+ok 38 - C01 printable card and both forms use the same six-question source
+  ---
+  duration_ms: 0.67425
+  type: 'test'
+  ...
+# Subtest: M01 demo spans four stations two rounds and dated synthetic board states
+ok 39 - M01 demo spans four stations two rounds and dated synthetic board states
+  ---
+  duration_ms: 0.36375
+  type: 'test'
+  ...
+# Subtest: M02 loading and clearing retains transaction safeguards and clears every dataset
+ok 40 - M02 loading and clearing retains transaction safeguards and clears every dataset
+  ---
+  duration_ms: 28.195209
+  type: 'test'
+  ...
+# Subtest: O02 offline cache covers every page module manifest and icon
+ok 41 - O02 offline cache covers every page module manifest and icon
+  ---
+  duration_ms: 0.642958
+  type: 'test'
+  ...
+# Subtest: O03 worker installs assets deletes old caches and serves relative paths offline
+ok 42 - O03 worker installs assets deletes old caches and serves relative paths offline
+  ---
+  duration_ms: 10.44125
+  type: 'test'
+  ...
+# Subtest: P01 station dates use plain words and the selected local zone
+ok 43 - P01 station dates use plain words and the selected local zone
+  ---
+  duration_ms: 0.656916
+  type: 'test'
+  ...
+# Subtest: P02 daylight time falls back on 1 November 2026 without changing the instant
+ok 44 - P02 daylight time falls back on 1 November 2026 without changing the instant
+  ---
+  duration_ms: 0.348334
+  type: 'test'
+  ...
+# Subtest: P03 board groups statuses and orders the latest snapshots newest first
+ok 45 - P03 board groups statuses and orders the latest snapshots newest first
+  ---
+  duration_ms: 0.676042
+  type: 'test'
+  ...
+# Subtest: P04 every status pairs its distinct inline symbol and word in board and log
+ok 46 - P04 every status pairs its distinct inline symbol and word in board and log
+  ---
+  duration_ms: 0.843125
+  type: 'test'
+  ...
+# Subtest: P05 each printed board repeats the synthetic banner and required footer
+ok 47 - P05 each printed board repeats the synthetic banner and required footer
+  ---
+  duration_ms: 0.670292
+  type: 'test'
+  ...
+# Subtest: P06 action log has readable dates and a named keyboard scroll region
+ok 48 - P06 action log has readable dates and a named keyboard scroll region
+  ---
+  duration_ms: 0.192417
+  type: 'test'
+  ...
+# Subtest: P07 board and log CSV preserve explicit station offsets and round trip history
+ok 49 - P07 board and log CSV preserve explicit station offsets and round trip history
+  ---
+  duration_ms: 1.043959
+  type: 'test'
+  ...
+# Subtest: P08 board offers both print sizes with tabloid body type at least 18 pt
+ok 50 - P08 board offers both print sizes with tabloid body type at least 18 pt
+  ---
+  duration_ms: 0.142291
+  type: 'test'
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 50
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 161.318375

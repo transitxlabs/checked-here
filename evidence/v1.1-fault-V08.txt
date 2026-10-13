@@ -1,0 +1,41 @@
+TAP version 13
+# Subtest: V08 questions 5 and 6 required after Yes on both routes
+not ok 1 - V08 questions 5 and 6 required after Yes on both routes
+  ---
+  duration_ms: 3.291875
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-r0XqzD/tests/core.test.mjs:129:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + {
+    +   checked_meaning: 'invalidRecord',
+    +   trust: 'invalidRecord'
+    + }
+    - {}
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    trust: 'invalidRecord'
+    checked_meaning: 'invalidRecord'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-r0XqzD/tests/core.test.mjs:132:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50.317542

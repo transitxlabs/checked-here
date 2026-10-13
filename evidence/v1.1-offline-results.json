@@ -1,0 +1,58 @@
+[
+  {
+    "route": "home",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "A working demo of dated station updates and short, voluntary rider check-ins.",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "staff",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Staff entry",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "rider",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Rider phone form",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "board",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Station board",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "card",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Printable rider card",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "quota",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Staffed quota",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "route": "data",
+    "reloaded": true,
+    "offlineReady": "Offline ready. This demo is cached on this device.",
+    "heading": "Device data",
+    "width": 768,
+    "scrollWidth": 768
+  }
+]

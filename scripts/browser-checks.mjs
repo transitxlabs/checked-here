@@ -21,7 +21,7 @@ const startServer=()=>{
   });
 };
 const stopServer=()=>new Promise(resolve=>{if(!server||server.exitCode!==null||server.signalCode!==null){resolve();return;}server.once('exit',resolve);server.kill();});
-const results={layouts:[],keyboard:[],offline:[],controls:[],axe:[],errors:[],externalRequests:[],print:[]};
+const results={layouts:[],keyboard:[],offline:[],controls:[],axe:[],errors:[],externalRequests:[],print:[],poster:[],overflow:[]};
 const waitReady=page=>page.waitForFunction(()=>document.querySelector('#offline')?.textContent.includes('Offline ready'));
 const go=async(page,route)=>{await page.goto(`${url}#${route}`);await page.locator('#view h2').first().waitFor({state:'attached'});await waitReady(page);};
 const snapshot=page=>page.evaluate(async()=>await(await import('./js/storage.mjs')).readAll());
@@ -78,8 +78,44 @@ try {
     if(['staff','rider'].includes(route))await choose(page,'#noticed_board','yes');
     const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,heading:document.querySelector('#view h2').textContent,duplicateIds:[...document.querySelectorAll('[id]')].map(e=>e.id).filter((id,i,a)=>a.indexOf(id)!==i),focusableSmall:[...document.querySelectorAll('button,input,select,a')].filter(e=>e.getClientRects().length&&getComputedStyle(e).position!=='absolute').map(e=>({id:e.id,tag:e.tagName,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})).filter(e=>e.width<24||e.height<24)}));
     results.layouts.push({route,scheme,...layout});assert.equal(layout.scrollWidth,width);assert.equal(layout.duplicateIds.length,0);assert.equal(layout.focusableSmall.length,0,JSON.stringify(layout.focusableSmall));
-    await page.screenshot({path:`evidence/v1-${route}-${scheme}-${width}.png`,fullPage:true});await names(page,`${route}-${scheme}-${width}`);await axeCheck(page,`${route}-${scheme}-${width}`);
+    await page.screenshot({path:`evidence/v1.1-${route}-${scheme}-${width}.png`,fullPage:true});await names(page,`${route}-${scheme}-${width}`);await axeCheck(page,`${route}-${scheme}-${width}`);
   }
+  // Exercise the station zone, repeated hour, contained log and print settings.
+  await go(page,'board');
+  assert.equal(await page.locator('#board-time-zone').inputValue(),'America/Vancouver');
+  await choose(page,'#board-time-zone','America/Toronto');
+  assert.ok((await page.locator('.last-updated').textContent()).includes('2 January 2026, 9:30 a.m.'));
+  await choose(page,'#board-time-zone','America/Vancouver');
+  for(const scheme of ['light','dark']) {
+    await page.emulateMedia({colorScheme:scheme});await page.setViewportSize({width:320,height:900});
+    const overflow=await page.evaluate(()=>{
+      const region=document.querySelector('.action-log');region.focus();
+      return {width:innerWidth,pageWidth:document.documentElement.scrollWidth,regionWidth:region.clientWidth,contentWidth:region.scrollWidth,tabIndex:region.tabIndex,role:region.getAttribute('role'),name:region.getAttribute('aria-label'),caption:region.querySelector('caption').textContent,focused:document.activeElement===region};
+    });
+    assert.equal(overflow.pageWidth,320);assert.ok(overflow.regionWidth<=320);assert.ok(overflow.contentWidth>overflow.regionWidth);assert.equal(overflow.tabIndex,0);assert.equal(overflow.focused,true);assert.equal(overflow.role,'region');assert.equal(overflow.name,'Action log');assert.ok(overflow.caption.includes('arrow keys'));
+    await page.keyboard.press('ArrowRight');await page.waitForFunction(()=>document.querySelector('.action-log').scrollLeft>0);
+    results.overflow.push({scheme,...overflow,keyboardScrolled:true});
+  }
+  // Long permitted title and reason strings still stay inside the 320 px page.
+  const stress=await page.evaluate(async()=>{
+    const article=document.querySelector('.station-board'),log=document.querySelector('.action-log');
+    const original={board:article.innerHTML,log:log.innerHTML};
+    for(const title of article.querySelectorAll('h3'))title.textContent='A'.repeat(100);
+    for(const cell of log.querySelectorAll('tbody th'))cell.textContent='A'.repeat(100);
+    for(const cell of log.querySelectorAll('tbody td:nth-child(3)'))cell.textContent='B'.repeat(160);
+    const measured={width:innerWidth,pageWidth:document.documentElement.scrollWidth,maximumTitle:100,maximumReason:160};
+    article.innerHTML=original.board;log.innerHTML=original.log;return measured;
+  });assert.equal(stress.width,320);assert.equal(stress.pageWidth,320);results.overflow.push({stress:true,...stress});
+  const poster=await page.evaluate(()=>({
+    header:document.querySelector('.poster-kicker').textContent,station:document.querySelector('.station-board h2').textContent,
+    statuses:[...document.querySelectorAll('.action-card>.status-badge')].map(e=>({word:e.textContent,icon:e.querySelector('svg').dataset.icon})),
+    banners:[...document.querySelectorAll('.app-banner,.synthetic-banner')].filter(e=>e.getClientRects().length).map(e=>e.textContent),
+    utcVisible:document.querySelector('.station-board').textContent.includes('UTC'),
+    typeSize:getComputedStyle(document.querySelector('.station-board h2')).fontSize
+  }));
+  assert.equal(poster.header,'Safety actions at this station');assert.deepEqual(poster.statuses.map(s=>s.icon),['checked','planned','not-done']);assert.deepEqual(poster.banners,['Demonstration: synthetic data']);assert.equal(poster.utcVisible,false);results.poster.push(poster);
+  const dst=await page.evaluate(async()=>{const {stationDate,offsetTimestamp}=await import('./js/dates.mjs');return ['2026-11-01T08:30:00.000Z','2026-11-01T09:30:00.000Z'].map(t=>({date:stationDate(t),iso:offsetTimestamp(t)}));});
+  assert.deepEqual(dst,[{date:'1 November 2026, 1:30 a.m.',iso:'2026-11-01T01:30:00.000-07:00'},{date:'1 November 2026, 1:30 a.m.',iso:'2026-11-01T01:30:00.000-08:00'}]);results.dst=dst;
   // Form errors are announced, link to controls and focus the first invalid field.
   for(const route of ['staff','rider']) {
     await go(page,route);await page.locator('#capture button[type=submit]').click();await page.locator('.error-summary').waitFor();
@@ -97,7 +133,7 @@ try {
   await page.locator('#reason').fill('Synthetic example: visit deferred.');await page.locator('#board-form button[type=submit]').click();await page.locator('#status').filter({hasText:'Previous status entries remain'}).waitFor();
   let current=await snapshot(page),action=current.action_log.find(r=>r.title==='Synthetic access check');assert.ok(action);
   await choose(page,'#action-choice',action.action_id);await choose(page,'#action_status','checked');await page.locator('#board-form button[type=submit]').click();await page.waitForFunction(async()=>{const s=await import('./js/storage.mjs');return (await s.readAll()).action_log.filter(r=>r.title==='Synthetic access check').length===2;});
-  const download=page.waitForEvent('download');await page.locator('#log-csv').click();await (await download).saveAs('evidence/v1-action-log-browser.csv');
+  const download=page.waitForEvent('download');await page.locator('#log-csv').click();await (await download).saveAs('evidence/v1.1-action-log-browser.csv');
   // A real key event walkthrough of every view. No pointer events in this section.
   await page.setViewportSize({width:768,height:900});
   for(const route of routes) {
@@ -123,6 +159,11 @@ try {
       }
     }
     if(route==='board'){
+      steps.push(await keyboardFind(page,f=>f.id==='board-time-zone'));await page.keyboard.press('e');await page.keyboard.press('Tab');
+      assert.equal(await page.locator('#board-time-zone').inputValue(),'America/Edmonton');
+      steps.push(await keyboardFind(page,f=>f.id==='board-print-size'));await page.keyboard.press('t');await page.keyboard.press('Tab');
+      assert.equal(await page.locator('#board-print-size').inputValue(),'tabloid');
+      steps.push(await keyboardFind(page,f=>f.tag==='DIV'&&f.text.startsWith('Action log')));await page.keyboard.press('ArrowRight');
       await keyText(page,'title','Keyboard synthetic action');await keySelect(page,'concern',['l']);await keySelect(page,'action_status',['p']);
       steps.push(await keyboardFind(page,f=>f.text==='Save synthetic action update'));await page.keyboard.press('Enter');await page.locator('#status').filter({hasText:'Previous status entries remain'}).waitFor();
     }
@@ -134,7 +175,7 @@ try {
     }
     if(route==='data'){
       steps.push(await keyboardFind(page,f=>f.id==='clear'));await page.keyboard.press('Enter');await page.locator('#status').filter({hasText:'Export all data as JSON'}).waitFor();
-      steps.push(await keyboardFind(page,f=>f.id==='exportJSON'));const downloaded=page.waitForEvent('download');await page.keyboard.press('Enter');await (await downloaded).saveAs('evidence/v1-device-data-browser.json');
+      steps.push(await keyboardFind(page,f=>f.id==='exportJSON'));const downloaded=page.waitForEvent('download');await page.keyboard.press('Enter');await (await downloaded).saveAs('evidence/v1.1-device-data-browser.json');
       steps.push(await keyboardFind(page,f=>f.id==='clear'));await page.keyboard.press('Enter');await page.locator('#confirm:not([hidden])').waitFor();assert.equal(await page.evaluate(()=>document.activeElement.id),'confirm-check');
       await page.keyboard.press('Space');steps.push(await keyboardFind(page,f=>f.text==='Confirm and clear device'));await page.keyboard.press('Enter');await page.locator('#status').filter({hasText:'Device records cleared'}).waitFor();
       assert.deepEqual(await snapshot(page),{checkins:[],shifts:[],action_log:[]});
@@ -143,10 +184,29 @@ try {
   }
   // Prepare a populated station board for print and offline reload checks.
   await go(page,'home');await page.locator('#home-demo').click();await page.locator('#status').filter({hasText:'Synthetic demo loaded'}).waitFor();
-  await page.emulateMedia({media:'print',colorScheme:'light'});
-  for(const route of ['card','board']) {await go(page,route);await page.pdf({path:`evidence/v1-${route}-print.pdf`,format:'Letter',preferCSSPageSize:true,printBackground:true});results.print.push({route,visible:await page.locator('.print-surface').isVisible(),navigationHidden:await page.locator('nav').isHidden()});}
+  await go(page,'card');await page.emulateMedia({media:'print',colorScheme:'light'});
+  await page.pdf({path:'evidence/v1.1-card-print.pdf',preferCSSPageSize:true,printBackground:true});
+  results.print.push({route:'card',navigationHidden:await page.locator('nav').isHidden()});
+  await page.emulateMedia({media:'screen',colorScheme:'light'});await go(page,'board');await choose(page,'#board-time-zone','America/Vancouver');
+  for(const size of ['letter','tabloid']) {
+    await page.emulateMedia({media:'screen'});await choose(page,'#board-print-size',size);await page.emulateMedia({media:'print'});
+    const metrics=await page.evaluate(()=>({bodyPt:parseFloat(getComputedStyle(document.querySelector('.station-board')).fontSize)*72/96,banner:document.querySelector('.synthetic-banner').textContent,footer:document.querySelector('.board-footer').textContent,headerDisplay:getComputedStyle(document.querySelector('.poster-table thead')).display,footerDisplay:getComputedStyle(document.querySelector('.poster-table tfoot')).display}));
+    if(size==='tabloid')assert.ok(metrics.bodyPt>=18);assert.equal(metrics.headerDisplay,'table-header-group');assert.equal(metrics.footerDisplay,'table-footer-group');
+    await page.pdf({path:`evidence/v1.1-board-${size}-print.pdf`,preferCSSPageSize:true,printBackground:true});
+    results.print.push({route:'board',size,...metrics,navigationHidden:await page.locator('nav').isHidden()});
+  }
+  // Stress pagination with maximum-length synthetic actions in the print surface only.
+  await page.evaluate(async()=>{
+    const {stationBoardHTML}=await import('./js/board.mjs'),{demoActions}=await import('./js/core.mjs'),{default:locale}=await import('./js/locales/en.mjs');
+    const base=demoActions().find(r=>r.status==='not-done'),rows=Array.from({length:12},(_,i)=>({...base,id:`event-${i}`,action_id:`action-${i}`,title:`Synthetic pagination example ${i+1}: `+'Action text '.repeat(8).slice(0,65),reason:'A synthetic reason for this deferred action. '.repeat(4).slice(0,160)}));
+    document.querySelector('.station-board').outerHTML=stationBoardHTML(rows,'S1',locale);
+  });
+  for(const size of ['letter','tabloid']) {
+    await page.emulateMedia({media:'screen'});await choose(page,'#board-print-size',size);await page.emulateMedia({media:'print'});await page.pdf({path:`evidence/v1.1-board-${size}-multipage.pdf`,preferCSSPageSize:true,printBackground:true});
+  }
+  await go(page,'board');
   await page.emulateMedia({media:'screen',colorScheme:'light'});
-  const cache=await page.evaluate(async()=>({keys:await caches.keys(),files:(await(await caches.open('transitx-checkin-v1.0.0')).keys()).map(r=>new URL(r.url).pathname)}));results.cache=cache;assert.deepEqual(cache.keys,['transitx-checkin-v1.0.0']);
+  const cache=await page.evaluate(async()=>({keys:await caches.keys(),files:(await(await caches.open('transitx-checkin-v1.1.0')).keys()).map(r=>new URL(r.url).pathname)}));results.cache=cache;assert.deepEqual(cache.keys,['transitx-checkin-v1.1.0']);
   await stopServer();
   for(const route of routes) {
     await go(page,route);await page.reload();await waitReady(page);const width=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));results.offline.push({route,reloaded:true,offlineReady:await page.locator('#offline').textContent(),heading:await page.locator('#view h2').first().textContent(),...width});assert.equal(width.width,width.scrollWidth);
@@ -154,9 +214,9 @@ try {
   assert.equal((await snapshot(page)).action_log.length,20);assert.equal(results.externalRequests.length,0);assert.equal(results.errors.length,0,JSON.stringify(results.errors));
   results.passed=true;results.axeSource=axePath?'Existing local copy; no installation':'No existing local copy; not installed';
 } catch(error){results.passed=false;results.failure=error.stack;process.exitCode=1;} finally {
-  writeFileSync('evidence/v1-browser-results.json',JSON.stringify(results,null,2)+'\n');
-  writeFileSync('evidence/v1-keyboard-output.txt',results.keyboard.map(r=>`${r.route}: ${r.passed?'PASS':'FAIL'}\n${r.steps.map(s=>`  Tab to ${s.id||s.route||s.name||s.tag}; ${s.text}`.trimEnd()).join('\n')}`).join('\n')+'\n');
-  writeFileSync('evidence/v1-offline-results.json',JSON.stringify(results.offline,null,2)+'\n');
+  writeFileSync('evidence/v1.1-browser-results.json',JSON.stringify(results,null,2)+'\n');
+  writeFileSync('evidence/v1.1-keyboard-output.txt',results.keyboard.map(r=>`${r.route}: ${r.passed?'PASS':'FAIL'}\n${r.steps.map(s=>`  Tab to ${s.id||s.route||s.name||s.tag}; ${s.text}`.trimEnd()).join('\n')}`).join('\n')+'\n');
+  writeFileSync('evidence/v1.1-offline-results.json',JSON.stringify(results.offline,null,2)+'\n');
   await stopServer();await browser?.close();
   process.stdout.write(JSON.stringify({passed:results.passed,layouts:results.layouts.length,axeChecks:results.axe.length,controls:results.controls.length,keyboard:results.keyboard.length,offline:results.offline.length,errors:results.errors,failure:results.failure},null,2)+'\n');
 }

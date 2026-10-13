@@ -1,0 +1,218 @@
+[
+  {
+    "scheme": "light",
+    "foreground": "ink",
+    "background": "surface",
+    "foregroundColour": "#173630",
+    "backgroundColour": "#f7f8f4",
+    "ratio": 12.253,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "ink",
+    "background": "paper",
+    "foregroundColour": "#173630",
+    "backgroundColour": "#fff",
+    "ratio": 13.07,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "ink",
+    "background": "soft",
+    "foregroundColour": "#173630",
+    "backgroundColour": "#e8eee8",
+    "ratio": 11.094,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "muted",
+    "background": "surface",
+    "foregroundColour": "#455c56",
+    "backgroundColour": "#f7f8f4",
+    "ratio": 6.746,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "muted",
+    "background": "paper",
+    "foregroundColour": "#455c56",
+    "backgroundColour": "#fff",
+    "ratio": 7.196,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "muted",
+    "background": "soft",
+    "foregroundColour": "#455c56",
+    "backgroundColour": "#e8eee8",
+    "ratio": 6.108,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "accent",
+    "background": "surface",
+    "foregroundColour": "#1b594a",
+    "backgroundColour": "#f7f8f4",
+    "ratio": 7.648,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "on-accent",
+    "background": "accent",
+    "foregroundColour": "#fff",
+    "backgroundColour": "#1b594a",
+    "ratio": 8.157,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "error",
+    "background": "surface",
+    "foregroundColour": "#972910",
+    "backgroundColour": "#f7f8f4",
+    "ratio": 7.456,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "error",
+    "background": "paper",
+    "foregroundColour": "#972910",
+    "backgroundColour": "#fff",
+    "ratio": 7.953,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "on-accent",
+    "background": "error",
+    "foregroundColour": "#fff",
+    "backgroundColour": "#972910",
+    "ratio": 7.953,
+    "passes": true
+  },
+  {
+    "scheme": "light",
+    "foreground": "paper",
+    "background": "ink",
+    "foregroundColour": "#fff",
+    "backgroundColour": "#173630",
+    "ratio": 13.07,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "ink",
+    "background": "surface",
+    "foregroundColour": "#e7f1eb",
+    "backgroundColour": "#14221d",
+    "ratio": 14.244,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "ink",
+    "background": "paper",
+    "foregroundColour": "#e7f1eb",
+    "backgroundColour": "#1c3027",
+    "ratio": 12.108,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "ink",
+    "background": "soft",
+    "foregroundColour": "#e7f1eb",
+    "backgroundColour": "#294036",
+    "ratio": 9.665,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "muted",
+    "background": "surface",
+    "foregroundColour": "#b8ccc2",
+    "backgroundColour": "#14221d",
+    "ratio": 9.758,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "muted",
+    "background": "paper",
+    "foregroundColour": "#b8ccc2",
+    "backgroundColour": "#1c3027",
+    "ratio": 8.295,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "muted",
+    "background": "soft",
+    "foregroundColour": "#b8ccc2",
+    "backgroundColour": "#294036",
+    "ratio": 6.621,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "accent",
+    "background": "surface",
+    "foregroundColour": "#b5e4cb",
+    "backgroundColour": "#14221d",
+    "ratio": 11.694,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "on-accent",
+    "background": "accent",
+    "foregroundColour": "#14221d",
+    "backgroundColour": "#b5e4cb",
+    "ratio": 11.694,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "error",
+    "background": "surface",
+    "foregroundColour": "#ffb49e",
+    "backgroundColour": "#14221d",
+    "ratio": 9.617,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "error",
+    "background": "paper",
+    "foregroundColour": "#ffb49e",
+    "backgroundColour": "#1c3027",
+    "ratio": 8.175,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "on-accent",
+    "background": "error",
+    "foregroundColour": "#14221d",
+    "backgroundColour": "#ffb49e",
+    "ratio": 9.617,
+    "passes": true
+  },
+  {
+    "scheme": "dark",
+    "foreground": "paper",
+    "background": "ink",
+    "foregroundColour": "#1c3027",
+    "backgroundColour": "#e7f1eb",
+    "ratio": 12.108,
+    "passes": true
+  }
+]

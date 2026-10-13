@@ -1,0 +1,154 @@
+{
+  "passed": true,
+  "card_pages": 1,
+  "boards": [
+    {
+      "file": "evidence/v1.1-board-letter-print.pdf",
+      "page_size_pt": [
+        612,
+        792
+      ],
+      "pages": [
+        {
+          "page": 1,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        }
+      ]
+    },
+    {
+      "file": "evidence/v1.1-board-tabloid-print.pdf",
+      "page_size_pt": [
+        1224,
+        792
+      ],
+      "pages": [
+        {
+          "page": 1,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        }
+      ]
+    },
+    {
+      "file": "evidence/v1.1-board-letter-multipage.pdf",
+      "page_size_pt": [
+        612,
+        792
+      ],
+      "pages": [
+        {
+          "page": 1,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        },
+        {
+          "page": 2,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        },
+        {
+          "page": 3,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        },
+        {
+          "page": 4,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        },
+        {
+          "page": 5,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        },
+        {
+          "page": 6,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 13.0
+        }
+      ]
+    },
+    {
+      "file": "evidence/v1.1-board-tabloid-multipage.pdf",
+      "page_size_pt": [
+        1224,
+        792
+      ],
+      "pages": [
+        {
+          "page": 1,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        },
+        {
+          "page": 2,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        },
+        {
+          "page": 3,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        },
+        {
+          "page": 4,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        },
+        {
+          "page": 5,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        },
+        {
+          "page": 6,
+          "banner_count": 1,
+          "heading_count": 1,
+          "notice": true,
+          "invitation": true,
+          "minimum_text_pt": 18.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+TAP version 13
+# Subtest: P01 station dates use plain words and the selected local zone
+not ok 1 - P01 station dates use plain words and the selected local zone
+  ---
+  duration_ms: 11.170167
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-UvAD8T/tests/core.test.mjs:314:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + '2 January 2026, 2:30 a.m.'
+    - '2 January 2026, 2:30 p.m.'
+                            ^
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '2 January 2026, 2:30 p.m.'
+  actual: '2 January 2026, 2:30 a.m.'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-UvAD8T/tests/core.test.mjs:315:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.8935

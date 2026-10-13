@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "layouts": 42,
+  "axeChecks": 45,
+  "controls": 43,
+  "keyboard": 7,
+  "offline": 7,
+  "errors": []
+}

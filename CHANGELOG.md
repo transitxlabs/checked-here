@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0 - 2026-10-13
+
+- Made the station board a poster with a large station heading, newest update, a short legend and ordered action cards.
+- Paired every status with an inline check, clock or cross and a written label on the board and action log.
+- Added station-local dates, a time-zone setting and explicit station offsets in CSV exports while preserving import round trips.
+- Added letter portrait and tabloid landscape print layouts with repeated demonstration banners and explanatory footers; tabloid body text is at least 18 pt.
+- Replaced per-row synthetic labels with a clear demonstration banner and made the action log readable in a named keyboard scroll region.
+- Added four plain pilot steps, eight semantic fault tests, responsive browser checks and print pagination evidence.
+- Pinned the synthetic 2026 Vancouver calendar to the seasonal clock changes requested for this demonstration.
+
 ## 1.0.0 - 2026-10-13
 
 - Added dated, append-only station actions with three statuses, required Not done reasons, printable boards and board and log CSV exports.

@@ -30,11 +30,11 @@ try {
   result.before=await page.evaluate(()=>caches.keys());assert.deepEqual(result.before,['transitx-checkin-v4']);
   legacy=false;
   await page.evaluate(async()=>{const previous=navigator.serviceWorker.controller,registration=await navigator.serviceWorker.getRegistration();await registration.update();if(navigator.serviceWorker.controller===previous)await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));});
-  await page.waitForFunction(async()=>!(await caches.keys()).includes('transitx-checkin-v4')&&(await caches.keys()).includes('transitx-checkin-v1.0.0'));
+  await page.waitForFunction(async()=>!(await caches.keys()).includes('transitx-checkin-v4')&&(await caches.keys()).includes('transitx-checkin-v1.1.0'));
   await page.goto(url+'#board');await page.waitForFunction(()=>document.querySelector('#offline')?.textContent.includes('Offline ready'));
-  result.after=await page.evaluate(()=>caches.keys());assert.deepEqual(result.after,['transitx-checkin-v1.0.0']);
+  result.after=await page.evaluate(()=>caches.keys());assert.deepEqual(result.after,['transitx-checkin-v1.1.0']);
   const data=await page.evaluate(async()=>await(await import('./js/storage.mjs')).readAll());assert.equal(data.checkins.length,1);assert.equal(data.shifts.length,1);assert.equal(data.action_log.length,0);result.preserved={checkins:data.checkins.length,shifts:data.shifts.length,action_log:data.action_log.length};
-  result.manifest=await page.evaluate(async()=>{const cache=await caches.open('transitx-checkin-v1.0.0');return await(await cache.match('./manifest.webmanifest')).json();});assert.equal(result.manifest.scope,'./');
+  result.manifest=await page.evaluate(async()=>{const cache=await caches.open('transitx-checkin-v1.1.0');return await(await cache.match('./manifest.webmanifest')).json();});assert.equal(result.manifest.scope,'./');
   await new Promise(resolve=>server.close(resolve));
   result.routes=[];
   for(const route of ['home','staff','rider','board','card','quota','data']){await page.goto(url+'#'+route);await page.reload();await page.waitForFunction(()=>document.querySelector('#offline')?.textContent.includes('Offline ready'));result.routes.push({route,heading:await page.locator('#view h2').first().textContent(),offline:true,reloaded:true});}
@@ -42,4 +42,4 @@ try {
   await page.goto(url+'?s=S3');assert.equal(await page.locator('#station').inputValue(),'S3');assert.equal(await page.locator('nav [aria-current=page]').textContent(),'Rider phone form');
   result.passed=true;
 }catch(error){result.passed=false;result.failure=error.stack;process.exitCode=1;}
-finally{writeFileSync('evidence/v1-upgrade-results.json',JSON.stringify(result,null,2)+'\n');await browser?.close();if(server.listening)await new Promise(resolve=>server.close(resolve));process.stdout.write(JSON.stringify(result,null,2)+'\n');}
+finally{writeFileSync('evidence/v1.1-upgrade-results.json',JSON.stringify(result,null,2)+'\n');await browser?.close();if(server.listening)await new Promise(resolve=>server.close(resolve));process.stdout.write(JSON.stringify(result,null,2)+'\n');}

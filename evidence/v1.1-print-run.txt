@@ -1,0 +1,1 @@
+PASS: 14 board pages retain one banner, a heading, both footer lines and the required type size. Rider card: 1 page.

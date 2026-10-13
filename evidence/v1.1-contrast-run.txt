@@ -1,0 +1,1 @@
+24 text colour pairs pass 4.5:1 in light and dark schemes. Minimum: 6.108:1.

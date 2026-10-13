@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: D01 dictionary lists every column with type and values
+not ok 1 - D01 dictionary lists every column with type and values
+  ---
+  duration_ms: 1.841083
+  type: 'test'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-qGcbmU/tests/core.test.mjs:79:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      [
+    -   'id',
+        'source',
+        'synthetic',
+        'station',
+        'round',
+        'date',
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'id'
+    1: 'source'
+    2: 'synthetic'
+    3: 'station'
+    4: 'round'
+    5: 'date'
+    6: 'time_band'
+    7: 'staff_code'
+    8: 'card_number'
+    9: 'safety'
+    10: 'reason_lighting'
+    11: 'reason_staff_nearby'
+    12: 'reason_crowding'
+    13: 'reason_too_few_people'
+    14: 'reason_behaviour'
+    15: 'reason_cleanliness'
+    16: 'reason_waiting'
+    17: 'reason_information'
+    18: 'reason_help'
+    19: 'reason_something_else'
+    20: 'knows_help'
+    21: 'noticed_board'
+    22: 'trust'
+    23: 'checked_meaning'
+  actual:
+    0: 'source'
+    1: 'synthetic'
+    2: 'station'
+    3: 'round'
+    4: 'date'
+    5: 'time_band'
+    6: 'staff_code'
+    7: 'card_number'
+    8: 'safety'
+    9: 'reason_lighting'
+    10: 'reason_staff_nearby'
+    11: 'reason_crowding'
+    12: 'reason_too_few_people'
+    13: 'reason_behaviour'
+    14: 'reason_cleanliness'
+    15: 'reason_waiting'
+    16: 'reason_information'
+    17: 'reason_help'
+    18: 'reason_something_else'
+    19: 'knows_help'
+    20: 'noticed_board'
+    21: 'trust'
+    22: 'checked_meaning'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-qGcbmU/tests/core.test.mjs:80:32)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 51.573667
