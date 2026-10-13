@@ -149,7 +149,7 @@ try {
   const cache=await page.evaluate(async()=>({keys:await caches.keys(),files:(await(await caches.open('transitx-checkin-v1.0.0')).keys()).map(r=>new URL(r.url).pathname)}));results.cache=cache;assert.deepEqual(cache.keys,['transitx-checkin-v1.0.0']);
   await stopServer();
   for(const route of routes) {
-    await go(page,route);const width=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));results.offline.push({route,offlineReady:await page.locator('#offline').textContent(),heading:await page.locator('#view h2').first().textContent(),...width});assert.equal(width.width,width.scrollWidth);
+    await go(page,route);await page.reload();await waitReady(page);const width=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));results.offline.push({route,reloaded:true,offlineReady:await page.locator('#offline').textContent(),heading:await page.locator('#view h2').first().textContent(),...width});assert.equal(width.width,width.scrollWidth);
   }
   assert.equal((await snapshot(page)).action_log.length,20);assert.equal(results.externalRequests.length,0);assert.equal(results.errors.length,0,JSON.stringify(results.errors));
   results.passed=true;results.axeSource=axePath?'Existing local copy; no installation':'No existing local copy; not installed';

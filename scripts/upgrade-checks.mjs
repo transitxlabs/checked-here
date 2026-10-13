@@ -37,7 +37,7 @@ try {
   result.manifest=await page.evaluate(async()=>{const cache=await caches.open('transitx-checkin-v1.0.0');return await(await cache.match('./manifest.webmanifest')).json();});assert.equal(result.manifest.scope,'./');
   await new Promise(resolve=>server.close(resolve));
   result.routes=[];
-  for(const route of ['home','staff','rider','board','card','quota','data']){await page.goto(url+'#'+route);await page.waitForFunction(()=>document.querySelector('#offline')?.textContent.includes('Offline ready'));result.routes.push({route,heading:await page.locator('#view h2').first().textContent(),offline:true});}
+  for(const route of ['home','staff','rider','board','card','quota','data']){await page.goto(url+'#'+route);await page.reload();await page.waitForFunction(()=>document.querySelector('#offline')?.textContent.includes('Offline ready'));result.routes.push({route,heading:await page.locator('#view h2').first().textContent(),offline:true,reloaded:true});}
   await page.goto(url+'?s=S3#board');assert.equal(await page.locator('nav [aria-current=page]').textContent(),'Station board');
   await page.goto(url+'?s=S3');assert.equal(await page.locator('#station').inputValue(),'S3');assert.equal(await page.locator('nav [aria-current=page]').textContent(),'Rider phone form');
   result.passed=true;
