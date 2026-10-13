@@ -1,208 +1,115 @@
 import {offsetTimestamp,canonicalTimestamp,DEFAULT_TIME_ZONE} from './dates.mjs';
 import en from './locales/en.mjs';
+
 export const STATIONS = ['S1', 'S2', 'S3', 'S4'];
 export const BANDS = ['weekday-morning', 'weekday-midday', 'weekday-evening', 'weekend'];
 export const REASONS = ['lighting', 'staff_nearby', 'crowding', 'too_few_people', 'behaviour', 'cleanliness', 'waiting', 'information', 'help', 'something_else'];
+// Question 3 keeps the original three answers. In question 4, yes means that
+// the rider read the board; yes-unread records a board noticed but not read.
 export const ANSWERS = ['yes', 'no', 'not-sure'];
-export const CHECKED = ['on-site', 'rated-safe', 'not-sure'];
+export const BOARD_ANSWERS = ['yes', 'yes-unread', 'no', 'not-sure'];
+export const CHECKED = ['on-site', 'rated-safe', 'problem-fixed', 'not-sure'];
 export const COLUMNS = ['id', 'source', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'card_number', 'safety', ...REASONS.map(r => `reason_${r}`), 'knows_help', 'noticed_board', 'trust', 'checked_meaning'];
-export const ACTION_COLUMNS = ['id','action_id','synthetic','station','title','concern','status','reason','updated_at'];
-export const BOARD_COLUMNS = ['action_id','synthetic','station','title','concern','status','reason','updated_at'];
+const ACTION_BASE_COLUMNS = ['id','action_id','synthetic','station','title','concern','status','reason','updated_at'];
+const ACTION_OPTIONAL_COLUMNS = ['status_date','due_date','event_number','withheld'];
+const LEGACY_ACTION_COLUMNS = [...ACTION_BASE_COLUMNS];
+export const ACTION_COLUMNS = [...ACTION_BASE_COLUMNS,...ACTION_OPTIONAL_COLUMNS];
+export const BOARD_COLUMNS = ['action_id','synthetic','station','title','concern','status','reason','updated_at','status_date','due_date'];
 export const ACTION_STATUSES = ['planned','checked','not-done'];
 export const CONCERNS = [...REASONS,'other'];
-export const BOARD_NOTICE = 'Checked means staff checked this action on site. It is not a safety rating.';
+export const BOARD_NOTICE = 'Checked means staff verified this action on site. It is not a safety rating.';
 export const SHIFT_COLUMNS = ['id', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'asks', 'refusals'];
+
 const recordKeys = ['id', 'source', 'synthetic', 'station', 'round', 'date', 'time_band', 'staff_code', 'card_number', 'safety', 'reasons', 'knows_help', 'noticed_board', 'trust', 'checked_meaning'];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
 export function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dateOnly(value) { const d=value instanceof Date?value:new Date(value); return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10); }
+function dateIsValid(value) { if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const d=new Date(`${value}T00:00:00.000Z`);return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===value; }
+function validDate(value,now) { return dateIsValid(value)&&(!now||value<=String(now).slice(0,10)); }
 export function cardKey(r) { return r.source === 'staff' ? `${r.station}/${r.round}/${r.card_number}` : null; }
-function validDate(s, now) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().slice(0,10) === s && s <= now; }
-function contextErrors(r, now, staffed) {
-  const e = {};
-  if (!STATIONS.includes(r.station)) e.station = 'invalidStation';
-  if (staffed && ![1,2].includes(r.round)) e.round = 'invalidRound';
-  if (!validDate(r.date, now)) e.date = 'invalidDate';
-  if (!BANDS.includes(r.time_band)) e.time_band = 'invalidBand';
-  if (staffed && !/^[A-Z]\d{2,4}$/.test(r.staff_code ?? '')) e.staff_code = 'invalidStaff';
-  return e;
-}
-export function validateCheckin(r, existing = [], now = today()) {
-  if (!r || typeof r !== 'object' || Array.isArray(r)) return {record: 'invalidRecord'};
-  const staff = r.source === 'staff';
-  const e = contextErrors(r, now, staff);
-  if (!uuid.test(r.id ?? '') || !['staff','rider-link'].includes(r.source) || Object.keys(r).some(k => !recordKeys.includes(k))) e.record = 'invalidRecord';
-  if (r.synthetic !== true) e.synthetic = 'invalidSynthetic';
-  if (!staff && (r.round !== null || r.staff_code !== null || r.card_number !== null)) e.record = 'invalidRecord';
-  if (staff && (!Number.isSafeInteger(r.card_number) || r.card_number < 1)) e.card_number = 'invalidCard';
-  if (staff && existing.some(x => cardKey(x) === cardKey(r))) e.card_number = 'duplicateCard';
-  if (!Number.isInteger(r.safety) || r.safety < 1 || r.safety > 10) e.safety = 'invalidSafety';
-  if (!Array.isArray(r.reasons) || r.reasons.length < 1 || r.reasons.length > 3 || new Set(r.reasons).size !== r.reasons.length || r.reasons.some(x => !REASONS.includes(x))) e.reasons = 'invalidReasons';
-  for (const k of ['knows_help','noticed_board']) if (!ANSWERS.includes(r[k])) e[k] = 'invalidAnswer';
-  if (r.noticed_board === 'yes') {
-    if (!(Number.isInteger(r.trust) && r.trust >= 1 && r.trust <= 5) && r.trust !== 'no-opinion') e.trust = 'invalidTrust';
-    if (!CHECKED.includes(r.checked_meaning)) e.checked_meaning = 'invalidAnswer';
-  } else {
-    if (r.trust !== null) e.trust = 'invalidRecord';
-    if (r.checked_meaning !== null) e.checked_meaning = 'invalidRecord';
-  }
-  return e;
-}
-export function validateShift(r, now = today()) {
-  if (!r || typeof r !== 'object' || Array.isArray(r)) return {record:'invalidRecord'};
-  const e = contextErrors(r, now, true);
-  if (!uuid.test(r.id ?? '') || Object.keys(r).some(k => !SHIFT_COLUMNS.includes(k))) e.record = 'invalidRecord';
-  if (r.synthetic !== true) e.synthetic = 'invalidSynthetic';
-  for (const k of ['asks','refusals']) if (!Number.isSafeInteger(r[k]) || r[k] < 0) e[k] = 'invalidCount';
-  if (r.refusals > r.asks) e.refusals = 'invalidRefusals';
-  return e;
-}
-export function quota(records) {
-  return STATIONS.flatMap(station => [1,2].map(round => {
-    const group = records.filter(r => r.source === 'staff' && r.station === station && r.round === round);
-    return {station, round, completed:group.length, target:75, remaining:Math.max(0,75-group.length), bands:Object.fromEntries(BANDS.map(b => [b,group.filter(r => r.time_band === b).length]))};
-  }));
-}
-export function riderCounts(records) { return STATIONS.map(station => ({station,count:records.filter(r => r.source === 'rider-link' && r.station === station).length})); }
-export function csvCell(v) { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? `"${s.replaceAll('"','""')}"` : s; }
-export function toCSV(rows, columns) { return [columns, ...rows.map(r => columns.map(c => r[c]))].map(row => row.map(csvCell).join(',')).join('\r\n')+'\r\n'; }
-export function checkinRows(records) { return records.map(r => Object.fromEntries(COLUMNS.map(c => [c, c.startsWith('reason_') ? Number(r.reasons.includes(c.slice(7))) : r[c]]))); }
-export function exportCSV(records) { return toCSV(checkinRows(records), COLUMNS); }
-export function exportJSON(checkins, shifts = [], action_log) { return JSON.stringify({schema_version:1,checkins,shifts,...(action_log===undefined?{}:{action_log})},null,2)+'\n'; }
-export function parseCSV(text) {
-  const rows = []; let row = [], cell = '', quoted = false, closed = false;
-  text = text.replace(/^\uFEFF/,'');
-  for (let i=0; i<text.length; i++) {
-    const c=text[i];
-    if (quoted) { if (c === '"') { if (text[i+1] === '"') { cell+='"'; i++; } else { quoted=false; closed=true; } } else cell+=c; }
-    else if (c === '"') { if (cell || closed) throw Error('invalidFile'); quoted=true; }
-    else if (c === ',' || c === '\n' || c === '\r') {
-      row.push(cell); cell=''; closed=false;
-      if (c !== ',') { rows.push(row); row=[]; if (c === '\r' && text[i+1] === '\n') i++; }
-    } else { if (closed) throw Error('invalidFile'); cell+=c; }
-  }
-  if (quoted) throw Error('invalidFile');
-  if (cell || row.length || closed) { row.push(cell); rows.push(row); }
-  return rows;
-}
-function sameKeys(o, keys) { return o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).length === keys.length && keys.every(k => Object.hasOwn(o,k)); }
-function csvBundle(text) {
-  const [header,...rows] = parseCSV(text);
-  const board = header?.join(',') === ACTION_COLUMNS.join(',');
-  if(board) return {schema_version:1,checkins:[],shifts:[],action_log:rows.map(row=>{if(row.length!==header.length) throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true') throw Error('invalidSynthetic');r.synthetic=true;r.updated_at=canonicalTimestamp(r.updated_at);return r;})};
-  const shift = header?.join(',') === SHIFT_COLUMNS.join(',');
-  if (!shift && header?.join(',') !== COLUMNS.join(',')) throw Error('invalidFile');
-  const records = rows.map(row => {
-    if (row.length !== header.length) throw Error('invalidFile');
-    const r = Object.fromEntries(header.map((k,i)=>[k,row[i]]));
-    if (r.synthetic !== 'true') throw Error('invalidSynthetic'); r.synthetic=true;
-    for (const k of (shift ? ['round','asks','refusals'] : ['round','card_number','safety'])) {
-      if (r[k] === '' && !shift && ['round','card_number'].includes(k)) r[k]=null;
-      else { if (!/^\d+$/.test(r[k])) throw Error('invalidFile'); r[k]=Number(r[k]); }
-    }
-    if (!shift) {
-      r.staff_code = r.staff_code || null;
-      r.trust = r.trust === '' ? null : /^[1-5]$/.test(r.trust) ? Number(r.trust) : r.trust;
-      r.checked_meaning = r.checked_meaning === '' ? null : r.checked_meaning;
-      r.reasons=[];
-      for (const reason of REASONS) { const k=`reason_${reason}`; if (!['0','1'].includes(r[k])) throw Error('invalidFile'); if (r[k] === '1') r.reasons.push(reason); delete r[k]; }
-    }
-    return r;
-  });
-  return {schema_version:1,checkins:shift?[]:records,shifts:shift?records:[]};
-}
-function canonical(r) { return JSON.stringify(Object.fromEntries(Object.keys(r).sort().map(k => [k,k === 'reasons' ? [...r[k]].sort() : r[k]]))); }
-export function prepareImport(text, format, existing = {checkins:[],shifts:[]}, now=today()) {
-  let bundle;
-  try { bundle = format === 'csv' ? csvBundle(text) : JSON.parse(text); } catch(e) { throw Error(e.message === 'invalidSynthetic' ? e.message : 'invalidFile'); }
-  if (!(sameKeys(bundle,['schema_version','checkins','shifts']) || sameKeys(bundle,['schema_version','checkins','shifts','action_log'])) || (bundle.action_log!==undefined && !Array.isArray(bundle.action_log)) || bundle.schema_version !== 1 || !Array.isArray(bundle.checkins) || !Array.isArray(bundle.shifts)) throw Error('invalidFile');
-  const result={checkins:[],shifts:[],duplicates:0};
-  const ids=new Map([...existing.checkins,...existing.shifts,...(existing.action_log??[])].map(r=>[r.id,canonical(r)]));
-  const cards=new Map(existing.checkins.filter(r=>r.source==='staff').map(r=>[cardKey(r),canonical(r)]));
-  for (const kind of ['checkins','shifts']) for (const r of bundle[kind]) {
-    if (!sameKeys(r,kind === 'checkins' ? recordKeys : SHIFT_COLUMNS)) throw Error('invalidFile');
-    const errors=kind === 'checkins' ? validateCheckin(r,[],now) : validateShift(r,now);
-    if (Object.keys(errors).length) throw Error(errors.synthetic ?? 'invalidFile');
-    const signature=canonical(r), key=kind === 'checkins' ? cardKey(r) : null;
-    if (ids.has(r.id) || (key && cards.has(key))) {
-      const previous=ids.get(r.id) ?? cards.get(key);
-      // Card duplicates with different IDs are accepted only when all answers match.
-      const equivalent=(a,b)=>canonical({...JSON.parse(a),id:r.id}) === canonical({...JSON.parse(b),id:r.id});
-      if (!equivalent(previous,signature) || (ids.has(r.id) && ids.get(r.id)!==signature) || (key && cards.has(key) && !equivalent(cards.get(key),signature))) throw Error('conflict');
-      result.duplicates++; continue;
-    }
-    ids.set(r.id,signature); if(key) cards.set(key,signature); result[kind].push(r);
-  }
-  if(bundle.action_log!==undefined) {
-    result.action_log=[];
-    const history=[...(existing.action_log??[])];
-    for(const r of [...bundle.action_log].sort((a,b)=>String(a.updated_at).localeCompare(String(b.updated_at)))) {
-      if(ids.has(r.id)) {if(ids.get(r.id)!==canonical(r)) throw Error('conflict');result.duplicates++;continue;}
-      if(Object.keys(validateAction(r,history,now+'T23:59:59.999Z')).length) throw Error('invalidFile');
-      ids.set(r.id,canonical(r));history.push(r);result.action_log.push(r);
-    }
-  }
-  return result;
-}
-export function dictionary(locale=en) {
-  const typeFor=c => c==='id'?'uuid':c==='synthetic'?'boolean':c==='date'?'date':c==='staff_code'?'code':(c.startsWith('reason_')?'binary':['round','card_number','safety','asks','refusals'].includes(c)?'integer':'enum');
-  const allowedFor=c => c.startsWith('reason_')?'binary':({id:'uuid',source:'source',synthetic:'synthetic',station:'station',round:'round',date:'date',time_band:'band',staff_code:'staff',card_number:'card',safety:'safety',knows_help:'answer',noticed_board:'answer',trust:'trust',checked_meaning:'checked',asks:'count',refusals:'count'}[c]);
-  const base=[['checkins',COLUMNS],['shifts',SHIFT_COLUMNS]].flatMap(([dataset,cols])=>cols.map(column=>({dataset,column,type:locale[`t_${typeFor(column)}`],allowed_values:locale[`a_${dataset==='shifts'&&column==='round'?'shift_round':dataset==='shifts'&&column==='staff_code'?'shift_staff':allowedFor(column)}`],description:locale[`d_${column.startsWith('reason_')?'reason':column}`]})));
-  return [...base,...[['board',BOARD_COLUMNS],['action_log',ACTION_COLUMNS]].flatMap(([dataset,columns])=>columns.map(column=>({dataset,column,type:locale[`t_${['id','action_id'].includes(column)?'uuid':column==='synthetic'?'boolean':['title','reason'].includes(column)?'text':column==='updated_at'?'timestamp':'enum'}`],allowed_values:locale[`a_${['id','action_id'].includes(column)?'uuid':column}`],description:locale[`d_${column}`]})))];
-}
-export function dictionaryCSV(locale=en) { return toCSV(dictionary(locale),['dataset','column','type','allowed_values','description']); }
-export function dictionaryMarkdown(locale=en) { return `# ${locale.dictionaryTitle}\n\n| ${locale.dataset} | ${locale.column} | ${locale.type} | ${locale.allowed} | ${locale.description} |\n| --- | --- | --- | --- | --- |\n`+dictionary(locale).map(r=>`| ${Object.values(r).join(' | ')} |`).join('\n')+'\n'; }
-export function demoRecords() {
-  const checkins=[],shifts=[]; let sequence=1;
-  const id=()=>`00000000-0000-4000-8000-${String(sequence++).padStart(12,'0')}`;
-  for (const station of STATIONS) for (const round of [1,2]) {
-    for(let card_number=1;card_number<=75;card_number++) {
-      const noticed_board=ANSWERS[(card_number+1)%3];
-      checkins.push({id:id(),source:'staff',synthetic:true,station,round,date:'2026-01-01',time_band:BANDS[(card_number-1)%4],staff_code:'F01',card_number,safety:1+(card_number%10),reasons:[REASONS[card_number%10]],knows_help:ANSWERS[card_number%3],noticed_board,trust:noticed_board==='yes'?(card_number%6 === 0?'no-opinion':1+(card_number%5)):null,checked_meaning:noticed_board==='yes'?CHECKED[card_number%3]:null});
-    }
-    shifts.push({id:id(),synthetic:true,station,round,date:'2026-01-01',time_band:'weekday-morning',staff_code:'F01',asks:100,refusals:25});
-  }
-  for(const station of STATIONS) for(let i=0;i<2;i++) {
-    const noticed_board=ANSWERS[(STATIONS.indexOf(station)+i)%3];
-    checkins.push({id:id(),source:'rider-link',synthetic:true,station,round:null,date:'2026-01-01',time_band:'weekend',staff_code:null,card_number:null,safety:7,reasons:['lighting'],knows_help:'yes',noticed_board,trust:noticed_board==='yes'?'no-opinion':null,checked_meaning:noticed_board==='yes'?'not-sure':null});
-  }
-  return {checkins,shifts,action_log:demoActions()};
+function contextErrors(r,now,staffed) { const e={};if(!STATIONS.includes(r.station))e.station='invalidStation';if(staffed&&!([1,2].includes(r.round)))e.round='invalidRound';if(!validDate(r.date,now))e.date='invalidDate';if(!BANDS.includes(r.time_band))e.time_band='invalidBand';if(staffed&&!/^[A-Z]\d{2,4}$/.test(r.staff_code??''))e.staff_code='invalidStaff';return e; }
+function optionalScalar(value,allowed) { return value===null||allowed(value); }
+
+export function isBlankCard(record) {
+  return !!record && (record.source==='staff'||record.source==='rider-link') && record.safety===null && Array.isArray(record.reasons) && record.reasons.length===0 && record.knows_help===null && record.noticed_board===null && record.trust===null && record.checked_meaning===null;
 }
 
-// Each event is a complete synthetic action snapshot. Only new events are added.
-export function validateAction(r, history=[], now=new Date().toISOString()) {
-  const e={};
-  if(!r || !sameKeys(r,ACTION_COLUMNS) || !uuid.test(r.id??'') || !uuid.test(r.action_id??'')) return {record:'invalidRecord'};
-  if(r.synthetic!==true) e.synthetic='invalidSynthetic';
-  if(!STATIONS.includes(r.station)) e.station='invalidStation';
-  if(typeof r.title!=='string' || !r.title.trim() || r.title.length>100 || /[\r\n]/.test(r.title)) e.title='invalidTitle';
-  if(!CONCERNS.includes(r.concern)) e.concern='invalidConcern';
-  if(!ACTION_STATUSES.includes(r.status)) e.status='invalidStatus';
-  if(typeof r.reason!=='string' || r.reason.length>160 || /[\r\n]/.test(r.reason) || (r.status==='not-done' && !r.reason.trim()) || (r.status!=='not-done' && r.reason!=='')) e.reason='invalidReason';
-  if(typeof r.updated_at!=='string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(r.updated_at) || Number.isNaN(Date.parse(r.updated_at)) || new Date(r.updated_at).toISOString()!==r.updated_at || r.updated_at>now) e.updated_at='invalidTimestamp';
-  if(history.some(x=>x.id===r.id)) e.record='invalidRecord';
-  const previous=currentActions(history).find(x=>x.action_id===r.action_id);
-  if(previous && (['station','title','concern','synthetic'].some(k=>previous[k]!==r[k]) || r.updated_at<=previous.updated_at || r.status===previous.status)) e.record='invalidHistory';
+export function validateCheckin(r,existing=[],now=today()) {
+  if(!r||typeof r!=='object'||Array.isArray(r))return {record:'invalidRecord'};
+  const staff=r.source==='staff',e=contextErrors(r,now,staff);
+  if(!uuid.test(r.id??'')||!['staff','rider-link'].includes(r.source)||Object.keys(r).length!==recordKeys.length||recordKeys.some(k=>!Object.hasOwn(r,k))||Object.keys(r).some(k=>!recordKeys.includes(k)))e.record='invalidRecord';
+  if(r.synthetic!==true)e.synthetic='invalidSynthetic';
+  if(!staff&&(r.round!==null||r.staff_code!==null||r.card_number!==null))e.record='invalidRecord';
+  if(staff&&(!Number.isSafeInteger(r.card_number)||r.card_number<1))e.card_number='invalidCard';
+  if(staff&&existing.some(x=>cardKey(x)===cardKey(r)))e.card_number='duplicateCard';
+  if(!optionalScalar(r.safety,v=>Number.isSafeInteger(v)&&v>=1&&v<=10))e.safety='invalidSafety';
+  if(!Array.isArray(r.reasons)||r.reasons.length>3||new Set(r.reasons).size!==r.reasons.length||r.reasons.some(x=>!REASONS.includes(x)))e.reasons='invalidReasons';
+  if(!optionalScalar(r.knows_help,v=>ANSWERS.includes(v)))e.knows_help='invalidAnswer';
+  if(!optionalScalar(r.noticed_board,v=>BOARD_ANSWERS.includes(v)))e.noticed_board='invalidAnswer';
+  if(r.noticed_board==='yes') {
+    if(!optionalScalar(r.trust,v=>(Number.isInteger(v)&&v>=1&&v<=5)||v==='no-opinion'))e.trust='invalidTrust';
+    if(!optionalScalar(r.checked_meaning,v=>CHECKED.includes(v)))e.checked_meaning='invalidAnswer';
+  } else {
+    if(r.trust!==null)e.trust='invalidRecord';
+    if(r.checked_meaning!==null)e.checked_meaning='invalidRecord';
+  }
   return e;
 }
-export function appendAction(history,event,now) {
-  if(Object.keys(validateAction(event,history,now)).length) throw Error('invalidHistory');
-  return [...history,{...event}];
+
+export function validateShift(r,now=today()) {
+  if(!r||typeof r!=='object'||Array.isArray(r))return {record:'invalidRecord'};
+  const e=contextErrors(r,now,true);
+  if(!uuid.test(r.id??'')||Object.keys(r).length!==SHIFT_COLUMNS.length||Object.keys(r).some(k=>!SHIFT_COLUMNS.includes(k)))e.record='invalidRecord';
+  if(r.synthetic!==true)e.synthetic='invalidSynthetic';
+  for(const k of ['asks','refusals'])if(!Number.isSafeInteger(r[k])||r[k]<0)e[k]='invalidCount';
+  if(r.refusals>r.asks)e.refusals='invalidRefusals';
+  return e;
 }
-export function currentActions(history,station) {
-  const latest=new Map();
-  for(const event of history) if(!latest.has(event.action_id) || event.updated_at>latest.get(event.action_id).updated_at) latest.set(event.action_id,event);
-  return [...latest.values()].filter(r=>!station || r.station===station).sort((a,b)=>a.station.localeCompare(b.station)||a.title.localeCompare(b.title));
+
+export function quota(records) { return STATIONS.flatMap(station=>[1,2].map(round=>{const group=records.filter(r=>r.source==='staff'&&r.station===station&&r.round===round),completed=group.filter(r=>!isBlankCard(r)),blank=group.filter(isBlankCard);return {station,round,completed:completed.length,blank:blank.length,target:75,remaining:Math.max(0,75-completed.length),bands:Object.fromEntries(BANDS.map(b=>[b,completed.filter(r=>r.time_band===b).length]))};})); }
+export function riderCounts(records) { return STATIONS.map(station=>{const group=records.filter(r=>r.source==='rider-link'&&r.station===station);return {station,count:group.filter(r=>!isBlankCard(r)).length,blank:group.filter(isBlankCard).length};}); }
+export function csvCell(v) { const s=v==null?'':String(v);return /[",\r\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s; }
+export function toCSV(rows,columns) { return [columns,...rows.map(r=>columns.map(c=>r[c]))].map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n'; }
+export function checkinRows(records) { return records.map(r=>Object.fromEntries(COLUMNS.map(c=>[c,c.startsWith('reason_')?(r.reasons.length?Number(r.reasons.includes(c.slice(7))):''):r[c]]))); }
+export function exportCSV(records) { return toCSV(checkinRows(records),COLUMNS); }
+export function exportJSON(checkins,shifts=[],action_log) { return JSON.stringify({schema_version:1,checkins,shifts,...(action_log===undefined?{}:{action_log})},null,2)+'\n'; }
+
+export function parseCSV(text) {
+  const rows=[];let row=[],cell='',quoted=false,closed=false;text=text.replace(/^\uFEFF/,'');
+  for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else{quoted=false;closed=true;}}else cell+=c;}else if(c==='"'){if(cell||closed)throw Error('invalidFile');quoted=true;}else if(c===','||c==='\n'||c==='\r'){row.push(cell);cell='';closed=false;if(c!==','){rows.push(row);row=[];if(c==='\r'&&text[i+1]==='\n')i++;}}else{if(closed)throw Error('invalidFile');cell+=c;}}
+  if(quoted)throw Error('invalidFile');if(cell||row.length||closed){row.push(cell);rows.push(row);}return rows;
 }
-export function boardCSV(history,station,timeZone=DEFAULT_TIME_ZONE) {return toCSV(currentActions(history,station).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),BOARD_COLUMNS);}
-export function actionLogCSV(history,station,timeZone=DEFAULT_TIME_ZONE) {return toCSV(history.filter(r=>!station || r.station===station).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),ACTION_COLUMNS);}
-export function demoActions() {
-  const rows=[];let n=700;
-  const id=()=>`00000000-0000-4000-8000-${String(n++).padStart(12,'0')}`;
-  for(const station of STATIONS) for(const [i,status] of ACTION_STATUSES.entries()) {
-    const action_id=id();
-    const base={action_id,synthetic:true,station,title:['Review platform lighting','Check information display','Arrange upkeep visit'][i],concern:['lighting','information','cleanliness'][i],reason:''};
-    rows.push({...base,id:id(),status:'planned',updated_at:'2026-01-01T09:00:00.000Z'});
-    if(status!=='planned') rows.push({...base,id:id(),status,reason:status==='not-done'?'Synthetic example: visit rescheduled.':'',updated_at:'2026-01-02T14:30:00.000Z'});
-  }
-  return rows;
+function sameKeys(o,keys){return o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===keys.length&&keys.every(k=>Object.hasOwn(o,k));}
+function actionKeysValid(o){return o&&typeof o==='object'&&!Array.isArray(o)&&ACTION_BASE_COLUMNS.every(k=>Object.hasOwn(o,k))&&Object.keys(o).every(k=>ACTION_COLUMNS.includes(k));}
+function parseOptionalDate(value){return value===''?null:value;}
+function parseActionRow(row,header){if(row.length!==header.length)throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true')throw Error('invalidSynthetic');r.synthetic=true;try{r.updated_at=canonicalTimestamp(r.updated_at);}catch{throw Error('invalidFile');}if(Object.hasOwn(r,'status_date'))r.status_date=parseOptionalDate(r.status_date);if(Object.hasOwn(r,'due_date'))r.due_date=parseOptionalDate(r.due_date);if(Object.hasOwn(r,'event_number')){if(r.event_number==='')r.event_number=null;else if(!/^[1-9]\d*$/.test(r.event_number))throw Error('invalidFile');else r.event_number=Number(r.event_number);}if(Object.hasOwn(r,'withheld')){if(r.withheld==='')r.withheld=false;else if(!['true','false'].includes(r.withheld))throw Error('invalidFile');else r.withheld=r.withheld==='true';}if(header.join(',')===LEGACY_ACTION_COLUMNS.join(',')){r.status_date=null;r.due_date=null;r.event_number=null;r.withheld=false;}return r;}
+function csvBundle(text){const [header,...rows]=parseCSV(text);if(!header)throw Error('invalidFile');const isAction=header.join(',')===ACTION_COLUMNS.join(',')||header.join(',')===LEGACY_ACTION_COLUMNS.join(',');if(isAction)return {schema_version:1,checkins:[],shifts:[],action_log:rows.map(row=>parseActionRow(row,header))};const shift=header.join(',')===SHIFT_COLUMNS.join(',');if(!shift&&header.join(',')!==COLUMNS.join(','))throw Error('invalidFile');const records=rows.map(row=>{if(row.length!==header.length)throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true')throw Error('invalidSynthetic');r.synthetic=true;for(const k of (shift?['round','asks','refusals']:['round','card_number'])){if(r[k]==='')r[k]=null;else{if(!/^\d+$/.test(r[k]))throw Error('invalidFile');r[k]=Number(r[k]);}}if(!shift){r.staff_code=r.staff_code===''?null:r.staff_code;r.safety=r.safety===''?null:/^\d+$/.test(r.safety)?Number(r.safety):(()=>{throw Error('invalidFile');})();r.knows_help=r.knows_help===''?null:r.knows_help;r.noticed_board=r.noticed_board===''?null:r.noticed_board;r.trust=r.trust===''?null:/^[1-5]$/.test(r.trust)?Number(r.trust):r.trust;r.checked_meaning=r.checked_meaning===''?null:r.checked_meaning;const cells=REASONS.map(reason=>r[`reason_${reason}`]);if(cells.every(value=>value===''))r.reasons=[];else{if(cells.some(value=>!['0','1'].includes(value)))throw Error('invalidFile');r.reasons=REASONS.filter((reason,i)=>cells[i]==='1');}for(const reason of REASONS)delete r[`reason_${reason}`];}return r;});return {schema_version:1,checkins:shift?[]:records,shifts:shift?records:[]};}
+function canonical(r){return JSON.stringify(Object.fromEntries(Object.keys(r).sort().map(k=>[k,k==='reasons'?[...r[k]].sort():r[k]])));}
+function canonicalAction(r){const value={...r};for(const key of ACTION_OPTIONAL_COLUMNS)if(!Object.hasOwn(value,key))value[key]=key==='withheld'?false:null;return canonical(value);}
+
+export function compareActionEvents(a,b){const byTime=String(a?.updated_at??'').localeCompare(String(b?.updated_at??''));if(byTime)return byTime;const byNumber=Number(a?.event_number??0)-Number(b?.event_number??0);if(byNumber)return byNumber;return String(a?.id??'').localeCompare(String(b?.id??''));}
+function latestEvent(history,actionId){return history.filter(x=>x.action_id===actionId).reduce((latest,event)=>!latest||compareActionEvents(event,latest)>0?event:latest,null);}
+function nowTimestamp(now){if(now instanceof Date)return now.toISOString();if(typeof now==='string'&&isoTimestamp.test(now))return now;if(typeof now==='string'&&dateIsValid(now))return `${now}T23:59:59.999Z`;return new Date().toISOString();}
+
+export function validateAction(r,history=[],now=new Date().toISOString()) {
+  const e={};if(!actionKeysValid(r)||!uuid.test(r.id??'')||!uuid.test(r.action_id??''))return {record:'invalidRecord'};if(r.synthetic!==true)e.synthetic='invalidSynthetic';if(!STATIONS.includes(r.station))e.station='invalidStation';if(typeof r.title!=='string'||!r.title.trim()||r.title.length>100||/[\r\n]/.test(r.title))e.title='invalidTitle';if(!CONCERNS.includes(r.concern))e.concern='invalidConcern';if(!ACTION_STATUSES.includes(r.status))e.status='invalidStatus';if(typeof r.reason!=='string'||r.reason.length>160||/[\r\n]/.test(r.reason)||(r.status==='not-done'&&!r.reason.trim())||(r.status==='planned'&&r.reason!==''&&!r.reason.trim())||(r.status==='checked'&&r.reason!==''))e.reason='invalidReason';const limit=nowTimestamp(now);if(typeof r.updated_at!=='string'||!isoTimestamp.test(r.updated_at)||Number.isNaN(Date.parse(r.updated_at))||new Date(r.updated_at).toISOString()!==r.updated_at||r.updated_at>limit)e.updated_at='invalidTimestamp';if(Object.hasOwn(r,'status_date')&&r.status_date!==null&&!validDate(r.status_date,dateOnly(limit)))e.status_date='invalidStatusDate';if(Object.hasOwn(r,'due_date')&&r.due_date!==null&&!dateIsValid(r.due_date))e.due_date='invalidDueDate';if(Object.hasOwn(r,'event_number')&&r.event_number!==null&&(!Number.isSafeInteger(r.event_number)||r.event_number<1))e.event_number='invalidEventNumber';if(Object.hasOwn(r,'withheld')&&typeof r.withheld!=='boolean')e.withheld='invalidWithheld';if(history.some(x=>x.id===r.id))e.record='invalidRecord';const prior=history.filter(x=>x.action_id===r.action_id),previous=latestEvent(history,r.action_id);if(prior.some(x=>['station','title','concern','synthetic'].some(k=>x[k]!==r[k])))e.record='invalidHistory';if(previous&&!e.record){if(r.updated_at<previous.updated_at)e.record='invalidHistory';else if(r.updated_at===previous.updated_at&&!(Number(r.event_number??0)>Number(previous.event_number??0)))e.record='invalidHistory';}return e;
 }
+export function appendAction(history,event,now){if(Object.keys(validateAction(event,history,now)).length)throw Error('invalidHistory');return [...history,{...event}];}
+export function currentActions(history,station){const latest=new Map();for(const event of history){if(!latest.has(event.action_id)||compareActionEvents(event,latest.get(event.action_id))>0)latest.set(event.action_id,event);}return [...latest.values()].filter(r=>!station||r.station===station).sort((a,b)=>a.station.localeCompare(b.station)||a.title.localeCompare(b.title)||compareActionEvents(a,b));}
+export function boardCSV(history,station,timeZone=DEFAULT_TIME_ZONE){return toCSV(currentActions(history,station).filter(r=>r.withheld!==true).sort((a,b)=>String(b.status_date??offsetTimestamp(b.updated_at,timeZone).slice(0,10)).localeCompare(String(a.status_date??offsetTimestamp(a.updated_at,timeZone).slice(0,10)))||compareActionEvents(b,a)).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),BOARD_COLUMNS);}
+export function actionLogCSV(history,station,timeZone=DEFAULT_TIME_ZONE){return toCSV(history.filter(r=>!station||r.station===station).slice().sort(compareActionEvents).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),ACTION_COLUMNS);}
+
+function dictionaryActionType(column){if(['id','action_id'].includes(column))return'uuid';if(column==='synthetic'||column==='withheld')return'boolean';if(['title','reason'].includes(column))return'text';if(column==='updated_at')return'timestamp';if(['status_date','due_date'].includes(column))return'date';if(column==='event_number')return'integer';return'enum';}
+export function dictionary(locale=en){const typeFor=c=>c==='id'?'uuid':c==='synthetic'?'boolean':c==='date'?'date':c==='staff_code'?'code':(c.startsWith('reason_')?'binary':['round','card_number','safety','asks','refusals'].includes(c)?'integer':'enum');const allowedFor=c=>c.startsWith('reason_')?'binary':({id:'uuid',source:'source',synthetic:'synthetic',station:'station',round:'round',date:'date',time_band:'band',staff_code:'staff',card_number:'card',safety:'safety',knows_help:'answer',noticed_board:'board_answer',trust:'trust',checked_meaning:'checked',asks:'count',refusals:'count'}[c]);const fallbackAllowed={board_answer:'yes; yes-unread; no; not-sure',status_date:'YYYY-MM-DD, today or earlier; empty',due_date:'YYYY-MM-DD or empty',event_number:'positive integer or empty',withheld:'true; false'};const fallbackDescription={status_date:'Date of the on-site status check, today or earlier.',due_date:'Calendar due date; future dates are allowed.',event_number:'Positive event sequence number used to order same-time entries.',withheld:'Internal withholding flag; withheld actions stay in the staff log.'};const base=[['checkins',COLUMNS],['shifts',SHIFT_COLUMNS]].flatMap(([dataset,cols])=>cols.map(column=>({dataset,column,type:locale[`t_${typeFor(column)}`]??typeFor(column),allowed_values:locale[`a_${dataset==='shifts'&&column==='round'?'shift_round':dataset==='shifts'&&column==='staff_code'?'shift_staff':allowedFor(column)}`]??fallbackAllowed[allowedFor(column)]??'See the allowed values for this field.',description:locale[`d_${column.startsWith('reason_')?'reason':column}`]??'Field description pending.'})));const allowedAction={id:'uuid',action_id:'uuid',synthetic:'synthetic',station:'station',title:'title',concern:'concern',status:'status',reason:'reason',updated_at:'updated_at',status_date:'status_date',due_date:'due_date',event_number:'event_number',withheld:'withheld'};const action=[['board',BOARD_COLUMNS],['action_log',ACTION_COLUMNS]].flatMap(([dataset,columns])=>columns.map(column=>({dataset,column,type:locale[`t_${dictionaryActionType(column)}`]??dictionaryActionType(column),allowed_values:locale[`a_${allowedAction[column]??column}`]??fallbackAllowed[column]??'See the allowed values for this field.',description:locale[`d_${column==='reason'?'action_reason':column}`]??fallbackDescription[column]??'Field description pending.'})));return [...base,...action];}
+export function dictionaryCSV(locale=en){return toCSV(dictionary(locale),['dataset','column','type','allowed_values','description']);}
+export function dictionaryMarkdown(locale=en){return `# ${locale.dictionaryTitle}\n\n| ${locale.dataset} | ${locale.column} | ${locale.type} | ${locale.allowed} | ${locale.description} |\n| --- | --- | --- | --- | --- |\n`+dictionary(locale).map(r=>`| ${Object.values(r).map(v=>v??'').join(' | ')} |`).join('\n')+'\n';}
+
+function clockDate(clock,days=0){const local=offsetTimestamp(clock instanceof Date?clock:new Date(clock),DEFAULT_TIME_ZONE).slice(0,10),d=new Date(`${local}T00:00:00.000Z`);d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+function clockTimestamp(clock,days,hour,minute=0){const d=new Date(`${clockDate(clock,days)}T00:00:00.000Z`);d.setUTCHours(hour,minute,0,0);return d.toISOString();}
+export function demoRecords(clock=new Date()){const checkins=[],shifts=[];let sequence=1;const id=()=>`00000000-0000-4000-8000-${String(sequence++).padStart(12,'0')}`;const collectionDate=clockDate(clock);for(const station of STATIONS)for(const round of [1,2]){for(let card_number=1;card_number<=75;card_number++){const noticed_board=BOARD_ANSWERS[(card_number+1)%BOARD_ANSWERS.length];checkins.push({id:id(),source:'staff',synthetic:true,station,round,date:collectionDate,time_band:BANDS[(card_number-1)%4],staff_code:'F01',card_number,safety:1+(card_number%10),reasons:[REASONS[card_number%10]],knows_help:ANSWERS[card_number%3],noticed_board,trust:noticed_board==='yes'?(card_number%6===0?'no-opinion':1+(card_number%5)):null,checked_meaning:noticed_board==='yes'?CHECKED[card_number%CHECKED.length]:null});}shifts.push({id:id(),synthetic:true,station,round,date:collectionDate,time_band:'weekday-morning',staff_code:'F01',asks:100,refusals:25});}for(const station of STATIONS)for(let i=0;i<2;i++){const noticed_board=BOARD_ANSWERS[(STATIONS.indexOf(station)+i)%BOARD_ANSWERS.length];checkins.push({id:id(),source:'rider-link',synthetic:true,station,round:null,date:collectionDate,time_band:'weekend',staff_code:null,card_number:null,safety:7,reasons:['lighting'],knows_help:'yes',noticed_board,trust:noticed_board==='yes'?'no-opinion':null,checked_meaning:noticed_board==='yes'?'not-sure':null});}return {checkins,shifts,action_log:demoActions(clock)};}
+
+export function demoActions(clock=new Date()){const rows=[];let n=700;const id=()=>`00000000-0000-4000-8000-${String(n++).padStart(12,'0')}`;const templates=[{title:'Replace two dark lights at the north stairs',concern:'lighting'},{title:'Post a clear help map at platform 2',concern:'information'},{title:'Clear litter beside the east entrance until the floor is visible',concern:'cleanliness'}];for(const [stationIndex,station] of STATIONS.entries())for(const [i,status] of ACTION_STATUSES.entries()){const action_id=id(),template=templates[i],base={action_id,synthetic:true,station,title:template.title,concern:template.concern,reason:'',status_date:clockDate(clock,-3),due_date:clockDate(clock,7+i),event_number:1,withheld:false},plannedTime=clockTimestamp(clock,-3,15+i,0);rows.push({...base,id:id(),status:'planned',reason:'Work scheduled and result will be checked.',updated_at:plannedTime});if(status!=='planned'){const changedTime=clockTimestamp(clock,-1,17+i,0);rows.push({...base,id:id(),status,event_number:2,status_date:clockDate(clock,-1),updated_at:changedTime,reason:status==='not-done'?'Visit rescheduled after the platform closure.':''});}}return rows;}
+
+export function prepareImport(text,format,existing={checkins:[],shifts:[]},now=today()){let bundle;try{bundle=format==='csv'?csvBundle(text):JSON.parse(text);}catch(e){throw Error(e.message==='invalidSynthetic'?e.message:'invalidFile');}if(!(sameKeys(bundle,['schema_version','checkins','shifts'])||sameKeys(bundle,['schema_version','checkins','shifts','action_log']))||(bundle.action_log!==undefined&&!Array.isArray(bundle.action_log))||bundle.schema_version!==1||!Array.isArray(bundle.checkins)||!Array.isArray(bundle.shifts))throw Error('invalidFile');const result={checkins:[],shifts:[],duplicates:0};const ids=new Map([...existing.checkins,...existing.shifts,...(existing.action_log??[])].map(r=>[r.id,r.action_id?canonicalAction(r):canonical(r)]));const cards=new Map(existing.checkins.filter(r=>r.source==='staff').map(r=>[cardKey(r),canonical(r)]));for(const kind of ['checkins','shifts'])for(const r of bundle[kind]){if(!sameKeys(r,kind==='checkins'?recordKeys:SHIFT_COLUMNS))throw Error('invalidFile');const errors=kind==='checkins'?validateCheckin(r,[],now):validateShift(r,now);if(Object.keys(errors).length)throw Error(errors.synthetic??'invalidFile');const signature=canonical(r),key=kind==='checkins'?cardKey(r):null;if(ids.has(r.id)||(key&&cards.has(key))){const previous=ids.get(r.id)??cards.get(key),equivalent=(a,b)=>canonical({...JSON.parse(a),id:r.id})===canonical({...JSON.parse(b),id:r.id});if(!equivalent(previous,signature)||(ids.has(r.id)&&ids.get(r.id)!==signature)||(key&&cards.has(key)&&!equivalent(cards.get(key),signature)))throw Error('conflict');result.duplicates++;continue;}ids.set(r.id,signature);if(key)cards.set(key,signature);result[kind].push(r);}if(bundle.action_log!==undefined){result.action_log=[];const history=[...(existing.action_log??[])];for(const r of [...bundle.action_log].sort(compareActionEvents)){if(!actionKeysValid(r))throw Error('invalidFile');const signature=canonicalAction(r);if(ids.has(r.id)){if(ids.get(r.id)!==signature)throw Error('conflict');result.duplicates++;continue;}if(Object.keys(validateAction(r,history,now)).length)throw Error('invalidFile');ids.set(r.id,signature);history.push(r);result.action_log.push(r);}}return result;}

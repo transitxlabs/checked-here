@@ -1,80 +1,69 @@
 # Checked Here
 
-A working demo by TransitX Labs Inc. of the tools a station pilot would use: a printable rider card, staff entry, a rider phone form, a dated station board, quota counts and exports. All records are synthetic. No real rider data is included or permitted.
+A working demonstration by TransitX Labs Inc. of a printable rider card, staff entry, rider phone form, station action board, quota counts and manual exports. All records are synthetic. Do not enter real rider data, personal details or incident reports.
 
-Riders can see which actions on their concerns are Planned, Checked on site or Not done with a short reason. A short, voluntary card asks how safe riders feel and whether they notice and trust the board. Checked means staff checked an action on site. It is not a safety rating.
+Checked means staff verified this action on site. It is not a safety rating.
 
-This demo is not affiliated with or endorsed by any transit agency. It has not been deployed with real riders. It does not establish that a station is safe, represent a rider population or verify that a real action happened. Accessibility checks are listed below; they are not a conformance claim.
+This demonstration is not approved or ready for real collection or deployment. It is not affiliated with or endorsed by any transit agency. It does not establish that a station is safe, represent a rider population or verify that a real action happened.
 
-## Run locally
+## Run locally or as a static site
 
-From the repository root:
+Run `python3 -m http.server 8913 --bind 127.0.0.1` in this folder and open `http://127.0.0.1:8913/`. Plain HTML, CSS and JavaScript modules need no framework, build step, installation, external font or CDN. Service workers require localhost or HTTPS; opening the file directly is unsupported. GitHub Pages can serve this folder directly, including under a repository subpath. No deployment is part of this work.
 
-```sh
-python3 -m http.server 8913 --bind 127.0.0.1
-```
+Wait for **Offline ready** before disconnecting. The worker caches published application assets in `transitx-checkin-v1.2.0`, removes older application caches and serves cached files without a runtime network fallback. Preparation reports an error after an installation failure or 15 seconds without a result. Keep the same browser, origin and port to retain records.
 
-Open `http://127.0.0.1:8913/`. No framework, build step, package installation, external font, image, script or CDN is needed. Use a current browser with IndexedDB and service worker support. Service workers require localhost or HTTPS; opening `index.html` directly is not supported.
+## Explore
 
-Wait for **Offline ready**. The first load caches every application asset. After that, reloads and all views work with the local server stopped. The service worker uses a versioned cache, removes older application caches on activation and serves cached assets without a runtime network fallback. A manifest and local icons support installation where the browser offers it. Keep the same browser, origin and port to return to stored data.
+**Load synthetic demo** adds 600 staffed cards, 8 self-selected rider-phone records, 8 shifts and 20 events for 12 actions across four placeholder stations and two rounds. Dates are relative to the load date and identifiers stay stable. Repeating the load on the same date skips duplicates. Loading a fresh dated example into an older example's identifiers reports a conflict; export and clear the old demonstration first. Nothing is silently overwritten.
 
-## Explore the demo
+**Staff entry** is for adult-rider practice cards. Station, round, date, time band, distribution staff code and card number are visibly marked required. Every rider question may be skipped, including all of question 2. Staff must not invent answers. Dates cannot be in the future. Saving keeps station, round, date, time band and staff code, clears answers, advances the card number by one and focuses that number. A separate shift log records asks and refusals, with refusals no greater than asks.
 
-The home screen explains the three capture and board routes. Choose **Load synthetic demo** to add 600 staffed check-ins across four placeholder stations and two rounds, 8 rider-link answers, 8 shifts and 20 dated board events for 12 actions. All three action statuses appear at every station. Demo identifiers are stable, so repeating the action skips exact duplicates. A conflicting manually entered card stops the load.
+Time bands are demonstration placeholders to be set with the transit agency in Month 1: weekday morning 06:00 to 09:59, weekday midday 10:00 to 14:59, weekday evening 15:00 to 21:59, and weekend 06:00 to 21:59. The hours appear on screen as well.
 
-- **Staff entry:** key in synthetic paper cards. Supply station S1 to S4, round 1 or 2, date, time band, pseudonymous staff code and a positive whole card number. Card numbers are unique within a station and round. A separate shift log records numeric asks and refusals; refusals cannot exceed asks. Do not enter the same shift twice.
-- **Rider phone form:** collect self-selected synthetic answers outside the 600 staffed quota. `?s=S2` preselects a placeholder station. No round, staff code or card number is collected. The device supplies the local date.
-- **Station board:** select a station, record an action title and its concern from question 2 or Other, and choose a status. Not done requires a short reason. Updating an action adds a dated event; earlier events are retained. Its station, title and concern stay fixed. The poster shows the station name, newest update, status legend and action cards in this order: Checked on site, Planned, Not done, newest first within each status. A check, clock or cross accompanies every written status. Each card includes the concern, the status-change date and a reason for Not done. A clear demonstration banner replaces per-row labels. Dates use plain words in the selected station time zone, default America/Vancouver. Choose Letter portrait or Tabloid landscape before printing. The print header and footer repeat on every board page, including the explanation of Checked and the rider form placeholder. Tabloid body text is at least 18 pt.
+**Rider phone form** keeps self-selected synthetic answers outside the staffed quota. `?s=S2` preselects a station. Phone answers stay in the browser that took them. They never reach staff devices or the staff quota. There is no shared backend or automatic transfer.
 
-The home screen includes **How a pilot would use this** in four steps: riders fill the card, staff record actions, the board shows what was checked, and the next card round asks whether riders noticed and trust the board.
+The printable card and both forms share the same six-question source. Riders may skip any question. Question 2 permits up to three ticks, or none. Question 3 asks what riders knew before today. Question 4 distinguishes reading the board from seeing it without reading it. Questions 5 and 6 apply only after **Yes, and I read it**, and remain optional. Switching to another answer clears them. The 1 to 10 safety scale and 1 to 5 trust scale remain. The card is for adult riders, provides an unmonitored-card warning and unfinished help-line and collection-notice placeholders, and keeps the distribution staff code in a labelled staff-only box.
 
-Vancouver times follow British Columbia's year-round Pacific Time: clocks moved to UTC-7 on 8 March 2026 and do not fall back on 1 November 2026 (Province of British Columbia news release of 17 September 2026, "Pacific Time: PCT"). Some installed time-zone databases still fall back, so the demo pins Vancouver to UTC-7 from 8 March 2026 onward. Earlier years and the other listed station zones use the installed time-zone database.
+**Quota view** counts only staffed cards with at least one rider answer as completed against 75 per station and round. Entirely blank cards are saved and counted separately, without reducing the remaining target. Time bands share the target. Self-selected rider-phone records and shift totals are separate.
 
-The **Printable rider card** and both forms use one six-question source. Wording follows the supplied draft v2.1. The emergency line says "Emergency: call 911." The non-emergency help line and collection notice remain placeholders. Questions 5 and 6 are shown and required only after Yes on question 4. Switching away from Yes clears them; unasked answers are stored as null and exported as empty CSV cells. Forms reject future dates, invalid ranges and unsupported fields. Select 1 to 3 distinct question 2 reasons.
+**Station board** shows a full status legend and the Checked notice before the first action. A summary counts each status. The status comes first on every action, followed by its bounded task, concern, Updated date and due date. Planned actions give a reason for waiting, and Not done actions give a reason. Actions appear newest first by their shown Updated date, regardless of status; entry time breaks ties. Older imported events without a due date show that it was not recorded. Unsafe or sensitive actions must be marked withheld; withheld actions remain in the staff log and are excluded from the public board and its CSV.
 
-**Quota view** counts staffed completions against 75 per station and round. Time bands share that target. Over-target records remain visible. Rider-link counts and numeric shift totals appear separately. Wide tables scroll within keyboard-focusable regions.
+The status date is the staff-entered date of the on-site check or update, defaulting to today. The log's `updated_at` records when the event was entered; `event_number` orders rechecks entered at the same instant. A same-status recheck appends another event. Station, title and concern cannot be corrected after creation in this demonstration. Status-history events cannot be edited or deleted; record a correction as a new event. Prior snapshots remain in the log.
 
-## Data and exports
+`?board=S1` opens a read-only phone board with no navigation, staff entry or exports. It shows local records, or a clearly marked synthetic example when the browser has no action log. It does not fetch another device's board. Reprint the station poster after every board update.
 
-Data stays in this browser's IndexedDB. Nothing is sent anywhere. There is no analytics, remote backup, tracking or submission endpoint. Enter only synthetic examples, including action titles and reasons. Do not enter names, contact details or incident reports. Browser clearing, private browsing and storage eviction can remove local records. Browser storage has no application-level encryption.
+## Printing and dates
 
-Explicit downloads include:
+Select Letter portrait or Tabloid landscape in the board view. Each printed sheet carries one action, the station context, the complete legend and both notices; display all sheets together as the station board. The legend and exact Checked notice precede actions and repeat with the header; the notice also repeats in the footer. Tabloid legend and notice text are at least 24 pt, all other Tabloid text is at least 18 pt, and status words are at least the action-title size. Letter board text is at least 13 pt. No viewing distance is claimed.
 
-- `checkins.csv` and `shifts.csv`: one row per synthetic record. Question 2 reasons use ten separate 0/1 columns.
-- `board-S1.csv`: current action snapshots for the selected station.
-- `action-log-S1.csv`: every status event for the selected station, including the synthetic marker and ISO 8601 timestamp with the selected station offset. The log shows readable local dates on screen. Offset CSV imports restore the canonical stored instant.
-- `device-data.json`: the complete schema version 1 bundle with check-ins, shifts and `action_log`. Earlier bundles without `action_log` remain importable.
-- `data-dictionary.csv` and `data-dictionary.md`: all fields, types, allowed values and descriptions. Repository copies are also supplied.
+The rider card uses both sides of one Letter sheet. Print the two pages double-sided. Rider-facing text is at least 12 pt, including instructions, help, collection notice and scale anchors. Administration and version text follow the staff box.
 
-Import check-in, shift or action-log CSV exports, or complete JSON bundles, through the file picker. Current-board CSV is a presentation export; import the action log to preserve its history. Records must be synthetic and validate. Exact duplicate UUIDs and equivalent staffed card keys are skipped. Conflicts or invalid history stop the entire import before a write. Action history is append-only. The device database upgrades without rewriting existing check-ins or shifts. Older stored answers are not silently repaired.
+Word dates use **January 2, 2026** and times use **2:30 p.m.** Board posters show dates only and no zone identifiers. The staff log uses station-local dates and times. Vancouver retains the existing year-round Pacific Time handling: UTC-7 from March 8, 2026 onward, without a November fall back. Other listed zones use the installed time-zone database. CSV timestamps retain ISO 8601 with an explicit station offset; imports restore the stored canonical instant.
 
-To clear local data, first export all data as JSON during the current session and verify the download. Choose **Clear this device after export**, check the confirmation box and confirm. Clearing removes check-ins, shifts and the action log from this browser origin. The transaction checks the export snapshot again, so a change from another tab prevents deletion. Downloads and the offline cache remain.
+## Records, privacy and manual transfers
 
-## Static hosting
+Application records stay in this browser's IndexedDB. The application does not transmit answers or action records, and has no analytics, submission endpoint, tracking or remote backup. Page and static-file requests still reach the site host; the host may retain request logs. This statement about application records does not describe the host's logging policy.
 
-The company publishes after its release check. For GitHub Pages, publish the repository root directly. All application paths are relative, including the manifest scope and service worker assets, so an organization repository subpath works without a build or path rewrite. Views use URL fragments such as `#board`, with no server-side routes. HTTPS supplies the secure context needed by the service worker. No deployment has been performed as part of this build.
+Explicit exports create files outside the browser database. Saved exports remain wherever the user or browser puts them, may be copied separately and are not erased by clearing this application. Transfers between browsers are manual demonstration exports followed by file imports; there is no live collection or synchronization service. Browser clearing, storage eviction or private browsing can remove records. There is no application-level encryption.
 
-## Local checks and accessibility
+Downloads include `checkins.csv`, `shifts.csv`, selected `board-S1.csv`, `action-log-S1.csv`, complete `device-data.json`, and the data dictionary. Blank scalar answers are null in JSON and empty in CSV. Zero question-2 ticks mean no recorded answer: the ten reason columns are empty. On answered question-2 rows the columns are 0 or 1. Legacy all-zero reason rows remain importable. The dictionary defines every field and blank value.
 
-The target is WCAG 2.1 AA. The demo has semantic landmarks, a skip link, labelled controls, question fieldsets and legends, linked and announced errors, visible focus, polite status messages, large control targets and light and dark colour schemes. It honours reduced motion and uses system fonts only.
+Check-in, shift and action-log CSV and complete JSON bundles can be imported manually. Current-board CSV is a presentation export; use the action log to preserve history. Only synthetic records are accepted. Exact duplicate identifiers and equivalent staffed card keys are skipped; conflicting records stop the entire import before writing. Earlier bundles and action snapshots remain supported. Existing stored records are not silently rewritten.
 
-Run the dependency-free tests with Node 22 or later:
+To clear records, export all data as JSON in the current session and verify the downloaded file, then choose **Clear this device after export**, tick the confirmation and confirm. A second transaction check prevents erasing a changed snapshot. This clears all three datasets, including withheld history, while retaining downloads and the offline cache.
 
-```sh
-node --test
-node scripts/run-faults.mjs --v11
-```
+## Local verification and accessibility
 
-The fault runner makes disposable local copies and plants one semantic fault per test. It requires the named test to fail, rejects syntax-only failures and leaves delivered source intact. Earlier evidence is preserved; version 1.1 receipts use the `v1.1-` prefix. Every new test first fails on its own planted semantic fault.
+Run `node --test` and `node scripts/run-faults.mjs --v12`. The fault runner plants a separate semantic fault for each named test in a disposable local copy and requires that test to fail before the retained passing suite. Syntax-only failures do not count. Existing test identifiers and applicable coverage remain, with revised optional-answer and board-order contracts.
 
-The retained version 1.1 run passed 50 tests, detected all 50 planted semantic faults, and found no WCAG 2.1 A/AA violations in 45 local accessibility scans. The browser checks cover every view at 320, 768 and 1280 px in light and dark schemes, keyboard navigation and operation, control names through the Chrome DevTools Protocol Accessibility domain, printable card and board output, and full reloads after stopping the server. The rider card and sample board each fit on one Letter page. The sample board also fits on one Tabloid landscape page. Additional multi-page stress fixtures verify exactly one banner, a heading and both footer lines on every page, with measured Tabloid text of at least 18 pt. An upgrade check preserves existing records, replaces the older cache and reloads every view under a repository subpath. An existing local copy of axe-core is used offline; nothing is installed. Screenshots and machine-readable results are in `evidence/`. The stylesheet text-colour pairs pass 4.5:1 in both schemes, with a minimum of 6.108:1. Some scanner colour-contrast nodes still require manual review. These checks do not replace testing with people using assistive technology.
+Automatic accessibility results mean **no violations detected automatically in the tested states**. They are not an accessibility conformance certification. Browser checks cover all routes at 320, 768 and 1280 px in light and dark schemes, accessible control names and local automatic scans. Manual-script checks cover keyboard operation, visible focus, skip and error links, focus after save/export/import, conditional questions, blank cards, the phone board, colour contrast, print reading order and type sizes, and reloads with the local server stopped. These checks do not replace review with people using assistive technology.
 
-To repeat the browser script, set `BROWSER_LIBRARY` to an existing local browser automation module and `AXE_LIBRARY` to an existing local `axe.min.js`, then run `node scripts/browser-checks.mjs`. Set `CHROME_EXECUTABLE` if Chrome is at another location. After generating PDFs, `python3 scripts/print-checks.py` inspects every page using an existing local PDF reader. The script uses a temporary browser profile and a loopback server; it stops its server and browser after checking.
+Use existing local software only. To repeat browser checks, set `BROWSER_LIBRARY` to an installed browser automation module and `AXE_LIBRARY` to a local scanner file, then run `node scripts/browser-checks.mjs`. `CHROME_EXECUTABLE` may select an existing Chrome executable. `python3 scripts/print-checks.py` inspects generated PDFs using the existing local PDF reader. The harness blocks external requests and closes its browser and loopback server.
 
-`BUILD_REPORT.md` and `SHA256SUMS` are uncommitted post-commit receipts. They record the final commit, observed checks and exact file hashes. The passing suite retains the original rules and adds station-local date formatting, Vancouver staying at UTC-7 through 1 November 2026 and the following winter, board ordering, symbol and word pairing, print banners and sizes, and the action log scroll region. The browser script checks actual 320 px page width and arrow-key scrolling as well as the wider layouts.
+The final source commit is recorded before generating final PDFs. Refreshed evidence, `BUILD_REPORT.md` and `SHA256SUMS` remain uncommitted receipts, record that SHA and verify tracked source bytes are unchanged. Earlier evidence remains intact. The manifest covers the payload, evidence and report and excludes itself.
 
-All question wording and translated display strings live in `js/locales/en.mjs`. The second locale has matching keys marked `translation pending`; it is not an available translated language. Approved translations and further accessibility review are required before real use. Help lines and the collection notice deliberately remain unfinished.
+Display strings live in `js/locales/en.mjs`; page language comes from the locale. The second locale contains matching pending keys for development and is excluded from the offline cache. Approved translations, help lines, collection notice and further review are required for real use.
 
 ## Open by design
 
-Released under Apache-2.0. See `LICENSE`. The plain HTML, CSS and JavaScript modules can be inspected and reused locally. Licensing does not authorize real collection, deployment or public use on behalf of a client.
+Code licence: Apache-2.0 (see `LICENSE`). The plain HTML, CSS and JavaScript modules can be inspected and reused locally. This demonstration is not approved or ready for real collection or deployment.

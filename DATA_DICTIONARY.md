@@ -11,21 +11,21 @@
 | checkins | time_band | enum | weekday-morning; weekday-midday; weekday-evening; weekend | Collection time band. |
 | checkins | staff_code | code | one capital letter and 2 to 4 digits; empty for rider-link | Pseudonymous staff code; empty for rider-link. |
 | checkins | card_number | integer | positive integer; empty for rider-link | Card number unique within station and round; empty for rider-link. |
-| checkins | safety | integer | 1 to 10 | Current feeling of safety. |
-| checkins | reason_lighting | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_staff_nearby | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_crowding | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_too_few_people | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_behaviour | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_cleanliness | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_waiting | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_information | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_help | integer | 0; 1 | Selected reason indicator. |
-| checkins | reason_something_else | integer | 0; 1 | Selected reason indicator. |
-| checkins | knows_help | enum | yes; no; not-sure | Knowledge of how to get help. |
-| checkins | noticed_board | enum | yes; no; not-sure | Noticed a board with dated updates. |
-| checkins | trust | enum | 1; 2; 3; 4; 5; no-opinion; empty unless noticed_board=yes | Trust in station updates. Asked only after a Yes on question 4; empty (null) otherwise. |
-| checkins | checked_meaning | enum | on-site; rated-safe; not-sure; empty unless noticed_board=yes | Interpretation of Checked. Asked only after a Yes on question 4; empty (null) otherwise. |
+| checkins | safety | integer | 1 to 10; empty means no answer | Feeling of safety; empty (null) means no answer. |
+| checkins | reason_lighting | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_staff_nearby | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_crowding | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_too_few_people | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_behaviour | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_cleanliness | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_waiting | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_information | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_help | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | reason_something_else | integer | 0; 1; empty when no question 2 answer | Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. |
+| checkins | knows_help | enum | yes; no; not-sure; empty means no answer | Knowledge of how to get help before today; empty (null) means no answer. |
+| checkins | noticed_board | enum | yes; yes-unread; no; not-sure; empty means no answer | Whether the rider saw and read the station action board; empty (null) means no answer. |
+| checkins | trust | enum | 1; 2; 3; 4; 5; no-opinion; empty means no answer; empty unless noticed_board=yes | Trust in station updates. Asked only after Yes, and I read it on question 4; empty (null) otherwise. Optional when asked; null also means no answer. |
+| checkins | checked_meaning | enum | on-site; rated-safe; problem-fixed; not-sure; empty means no answer; empty unless noticed_board=yes | Interpretation of Checked. Asked only after Yes, and I read it on question 4; empty (null) otherwise. Optional when asked; null also means no answer. |
 | shifts | id | UUID | UUID, version 4 | Stable record identifier used for cross-device duplicate detection. |
 | shifts | synthetic | boolean | true | Synthetic practice data marker. |
 | shifts | station | enum | S1; S2; S3; S4 | Placeholder station. |
@@ -41,8 +41,10 @@
 | board | title | text | 1 to 100 characters; one line | Synthetic action title; fixed after creation. |
 | board | concern | enum | question 2 reason codes; other | Concern answered, from question 2 or Other; fixed after creation. |
 | board | status | enum | planned; checked; not-done | Current status in board rows; dated status snapshot in action_log rows. |
-| board | reason | text | 1 to 160 characters for not-done; empty otherwise; one line | Selected reason indicator. |
-| board | updated_at | timestamp | ISO 8601 timestamp; stored as Z, CSV with station offset; not in the future | Date and time of the status event. Board uses the latest event. Prior events are retained. Display uses station local time; CSV includes its offset. |
+| board | reason | text | 1 to 160 characters; optional for Planned; required for Not done; empty for Checked; one line | Reason for a Planned or Not done action; empty for Checked on site. |
+| board | updated_at | timestamp | ISO 8601 entry timestamp; stored as Z, CSV with station offset; not in the future | Entry timestamp for the append-only event. The board displays status_date; prior events remain in the log. CSV includes the station offset. |
+| board | status_date | date | YYYY-MM-DD, today or earlier | Date of the on-site status check shown on the board. |
+| board | due_date | date | YYYY-MM-DD or empty | Calendar due date; empty means no due date was recorded. |
 | action_log | id | UUID | UUID, version 4 | Stable record identifier used for cross-device duplicate detection. |
 | action_log | action_id | UUID | UUID, version 4 | Stable action identifier shared by all its status events. |
 | action_log | synthetic | boolean | true | Synthetic practice data marker. |
@@ -50,5 +52,9 @@
 | action_log | title | text | 1 to 100 characters; one line | Synthetic action title; fixed after creation. |
 | action_log | concern | enum | question 2 reason codes; other | Concern answered, from question 2 or Other; fixed after creation. |
 | action_log | status | enum | planned; checked; not-done | Current status in board rows; dated status snapshot in action_log rows. |
-| action_log | reason | text | 1 to 160 characters for not-done; empty otherwise; one line | Selected reason indicator. |
-| action_log | updated_at | timestamp | ISO 8601 timestamp; stored as Z, CSV with station offset; not in the future | Date and time of the status event. Board uses the latest event. Prior events are retained. Display uses station local time; CSV includes its offset. |
+| action_log | reason | text | 1 to 160 characters; optional for Planned; required for Not done; empty for Checked; one line | Reason for a Planned or Not done action; empty for Checked on site. |
+| action_log | updated_at | timestamp | ISO 8601 entry timestamp; stored as Z, CSV with station offset; not in the future | Entry timestamp for the append-only event. The board displays status_date; prior events remain in the log. CSV includes the station offset. |
+| action_log | status_date | date | YYYY-MM-DD, today or earlier | Date of the on-site status check shown on the board. |
+| action_log | due_date | date | YYYY-MM-DD or empty | Calendar due date; empty means no due date was recorded. |
+| action_log | event_number | integer | Positive event sequence number | Append-only event sequence number. |
+| action_log | withheld | boolean | true or false | True when a sensitive or unsafe action is withheld from the public board. |

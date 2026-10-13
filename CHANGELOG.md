@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 - 2026-10-13
+
+- Made rider answers optional, separated blank cards from staffed completions, and kept batch context between entries.
+- Clarified Checked with a full legend, revised six-question card, date and due date, and newest-first board reading.
+- Added dated same-status rechecks, withheld actions, a read-only phone board and current synthetic examples.
+- Fixed in-page focus, route titles, error announcements, form-control contrast and offline preparation failures.
+- Added larger two-sided rider cards, Tabloid legend type, semantic fault coverage and renewed browser and print checks.
+
 ## 1.1.1 - 2026-10-13
 
 - Vancouver times now follow British Columbia's year-round Pacific Time: UTC-7 from 8 March 2026, with no fall back on 1 November 2026. Version 1.1.0 wrongly applied a fall back on that date; a new test and planted fault cover the rule.

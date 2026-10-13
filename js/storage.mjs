@@ -1,4 +1,4 @@
-import {cardKey,exportJSON,validateAction} from './core.mjs';
+import {cardKey,exportJSON,validateAction,compareActionEvents} from './core.mjs';
 let database;
 const stores=['checkins','shifts','action_log'];
 export async function openStorage() {
@@ -24,7 +24,7 @@ export function readAll() {
   return new Promise((resolve,reject)=>{
     const tx=database.transaction(stores,'readonly');
     const c=tx.objectStore('checkins').getAll(),s=tx.objectStore('shifts').getAll(),a=tx.objectStore('action_log').getAll();
-    tx.oncomplete=()=>resolve({checkins:records(c.result),shifts:s.result,action_log:a.result.sort((x,y)=>x.updated_at.localeCompare(y.updated_at))});
+    tx.oncomplete=()=>resolve({checkins:records(c.result),shifts:s.result,action_log:a.result.sort(compareActionEvents)});
     tx.onabort=()=>reject(tx.error); tx.onerror=()=>reject(tx.error);
   });
 }
@@ -51,7 +51,7 @@ export function clearRecords(expectedExport) {
     function verify() {
       if(++finished!==stores.length) return;
       const [c,s,a]=requests.map(r=>r.result);
-      a.sort((x,y)=>x.updated_at.localeCompare(y.updated_at));
+      a.sort(compareActionEvents);
       if(exportJSON(records(c),s,a)!==expectedExport) {changed=true;tx.abort();return;}
       for(const name of stores) tx.objectStore(name).clear();
     }
