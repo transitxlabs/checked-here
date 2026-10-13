@@ -1,0 +1,14 @@
+[
+  {
+    "route": "staff",
+    "offline": "Offline ready. This prototype is cached on this device.",
+    "width": 320,
+    "scrollWidth": 320
+  },
+  {
+    "route": "rider",
+    "offline": "Offline ready. This prototype is cached on this device.",
+    "width": 320,
+    "scrollWidth": 320
+  }
+]

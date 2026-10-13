@@ -1,0 +1,7 @@
+id,source,synthetic,station,round,date,time_band,staff_code,card_number,safety,reason_lighting,reason_staff_nearby,reason_crowding,reason_too_few_people,reason_behaviour,reason_cleanliness,reason_waiting,reason_information,reason_help,reason_something_else,knows_help,noticed_board,trust,checked_meaning
+149182df-e3b8-494e-9604-cea34a0328f7,staff,true,S2,1,2026-10-13,weekday-morning,F01,9003,8,1,0,0,0,0,0,0,0,0,0,yes,not-sure,,
+3b423ef0-705c-4854-93dd-d70e7d887c16,rider-link,true,S2,,2026-10-13,weekday-morning,,,8,1,0,0,0,0,0,0,0,0,0,yes,no,,
+41e9be25-d4fb-4a5b-81eb-25b7f3abbcd8,staff,true,S2,1,2026-10-13,weekday-morning,F01,9002,8,1,0,0,0,0,0,0,0,0,0,yes,no,,
+4c66c94e-f10e-40f7-b7b3-44e0a62ed932,rider-link,true,S2,,2026-10-13,weekday-morning,,,8,1,0,0,0,0,0,0,0,0,0,yes,not-sure,,
+6c36889c-a6b0-4061-94c4-da631cb703c7,staff,true,S2,1,2026-10-13,weekday-morning,F01,9001,8,1,0,0,0,0,0,0,0,0,0,yes,yes,3,on-site
+ed40b352-995e-4713-9e0b-de97dfba6551,rider-link,true,S2,,2026-10-13,weekday-morning,,,8,1,0,0,0,0,0,0,0,0,0,yes,yes,3,on-site

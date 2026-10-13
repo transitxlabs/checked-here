@@ -16,10 +16,10 @@ Wait for the on-screen "Offline ready" message. After the first load, the servic
 
 ## Two routes
 
-- **Staff entry:** practice keying synthetic paper cards. Enter station S1 to S4, round 1 or 2, date, time band, pseudonymous staff code and positive whole card number, then the six card answers. Card numbers are unique within a station and round. A separate shift log stores numeric asks and refusals with shift context. Each log is one shift; do not enter the same shift twice.
-- **Rider phone form:** open `http://127.0.0.1:8913/?s=S2`, or choose the rider route. A valid station in the URL preselects that placeholder station. An absent or invalid station needs a choice. The date is the device's current local date and the rider selects the time band. No staff code, card number or round is collected. Answers are self-selected, marked `source=rider-link`, and excluded from the 600 staffed quota.
+- **Staff entry:** practice keying synthetic paper cards. Enter station S1 to S4, round 1 or 2, date, time band, pseudonymous staff code and positive whole card number, then the card answers, with questions 5 and 6 asked only after Yes on question 4. Card numbers are unique within a station and round. A separate shift log stores numeric asks and refusals with shift context. Each log is one shift; do not enter the same shift twice.
+- **Rider phone form:** open `http://127.0.0.1:8913/?s=S2`, or choose the rider route. A valid station in the URL preselects that placeholder station. An absent or invalid station needs a choice. The date is the device's current local date and the rider selects the time band. No staff code, card number or round is collected. Answers are self-selected, marked `source=rider-link`, and excluded from the 600 staffed quota. Before the first question, the form shows `[Emergency and non-emergency help lines approved by the client go here]` and `Nobody watches this form for urgent help.` The self-selection notice and collection-notice placeholder remain visible.
 
-The six card questions and choices use the supplied English wording. Every form save is marked synthetic. Dates cannot be in the future, numeric ratings must be whole numbers in range, answers are required, and 1 to 3 distinct reasons must be selected. Errors appear next to fields and focus moves to the first invalid answer. Refusals cannot exceed asks.
+The six card questions and choices use the supplied English wording. Every form save is marked synthetic. Dates cannot be in the future, numeric ratings must be whole numbers in range, questions 1 to 4 are required, and 1 to 3 distinct reasons must be selected. Both card headers say "A short, voluntary card." The form says "Answer 5 and 6 only if you answered Yes to question 4." After Yes, both questions are required with the current choices. After No or Not sure, both questions are hidden and stored as null. Switching away from Yes clears their answers. A value for either question when question 4 is not Yes is rejected on save and import. Errors appear next to fields and focus moves to the first invalid answer. Refusals cannot exceed asks.
 
 ## Views and files
 
@@ -27,7 +27,7 @@ The quota view shows staffed completions for each station and round against 75, 
 
 Exports are explicit browser downloads:
 
-- `checkins.csv`: one row per check-in; one column per field; ten separate 0/1 reason columns. Rider staff-only fields are empty.
+- `checkins.csv`: one row per check-in; one column per field; ten separate 0/1 reason columns. Rider staff-only fields are empty. Questions 5 and 6 have empty cells when question 4 is No or Not sure.
 - `shifts.csv`: one row per shift log.
 - `device-data.json`: schema version 1, check-ins and shift logs together. Use this complete export before clearing a device.
 - `data-dictionary.csv` and `data-dictionary.md`: every check-in and shift column, its type, allowed values and description. Repository copies are also supplied as `data-dictionary.csv` and `DATA_DICTIONARY.md`.
@@ -38,7 +38,7 @@ Clearing requires a complete JSON export during the current session, after the l
 
 ## Synthetic demo mode
 
-"Fill synthetic demo records" adds 600 fake staffed check-ins (75 per station and round), 8 rider-link answers and 8 numeric shift logs. Demo IDs and cards are stable. Repeating the action skips duplicates. A conflicting manually entered card stops the demo import with an error. All views and exports preserve the synthetic marker. No device data is preloaded until you choose this action.
+"Fill synthetic demo records" adds 600 fake staffed check-ins (75 per station and round), 8 rider-link answers and 8 numeric shift logs. Demo IDs and cards are stable. Repeating the action skips duplicates. A conflicting manually entered card stops the demo import with an error. All views and exports preserve the synthetic marker. Question 4 includes Yes, No and Not sure on each route; questions 5 and 6 have answers only after Yes and are null otherwise. No device data is preloaded until you choose this action.
 
 ## Limits
 
@@ -61,8 +61,8 @@ node scripts/run-faults.mjs
 node --test
 ```
 
-The fault runner makes disposable local copies. It plants one semantic fault per test, requires that named test to fail with a nonzero exit, rejects syntax-only failures, saves the failed run under `evidence/`, and removes the temporary copy. The delivered source remains intact. The passing test suite covers validation, quota separation, exports, dictionary completeness, import duplicates and conflicts, demo size, locale parity and offline cache coverage. `BUILD_REPORT.md` contains the observed runs, browser checks, file hashes and commit references.
+The fault runner makes disposable local copies. It plants one semantic fault per test, requires that named test to fail with a nonzero exit, rejects syntax-only failures, saves the failed run under `evidence/`, and removes the temporary copy. The delivered source remains intact. The passing test suite covers validation, quota separation, exports, dictionary completeness, import duplicates and conflicts, demo size, locale parity, offline cache coverage, conditional questions and rider notices. `BUILD_REPORT.md` contains the observed runs, browser checks, file hashes and commit references.
 
 ## Open by design
 
-Released under Apache-2.0. See `LICENSE`. The plain HTML, CSS and JavaScript modules can be inspected and reused locally. Licensing does not authorize real collection, deployment or public use on behalf of a client. There is no remote configured and nothing has been pushed.
+Released under Apache-2.0. See `LICENSE`. The plain HTML, CSS and JavaScript modules can be inspected and reused locally. Licensing does not authorize real collection, deployment or public use on behalf of a client.

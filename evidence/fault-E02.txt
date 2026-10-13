@@ -2,9 +2,9 @@ TAP version 13
 # Subtest: E02 CSV quoting and malformed inputs
 not ok 1 - E02 CSV quoting and malformed inputs
   ---
-  duration_ms: 1.077459
+  duration_ms: 1.882542
   type: 'test'
-  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-cOR95V/tests/core.test.mjs:67:1'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-RwQ132/tests/core.test.mjs:68:1'
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
@@ -24,7 +24,7 @@ not ok 1 - E02 CSV quoting and malformed inputs
     c"
   operator: 'strictEqual'
   stack: |-
-    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-cOR95V/tests/core.test.mjs:68:10)
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-RwQ132/tests/core.test.mjs:69:10)
     Test.runInAsyncScope (node:async_hooks:214:14)
     Test.run (node:internal/test_runner/test:1047:25)
     Test.start (node:internal/test_runner/test:944:17)
@@ -38,4 +38,4 @@ not ok 1 - E02 CSV quoting and malformed inputs
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 42.059916
+# duration_ms 46.65125

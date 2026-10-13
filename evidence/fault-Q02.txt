@@ -2,9 +2,9 @@ TAP version 13
 # Subtest: Q02 rider counts are separate
 not ok 1 - Q02 rider counts are separate
   ---
-  duration_ms: 0.964459
+  duration_ms: 1.319541
   type: 'test'
-  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-qrKji0/tests/core.test.mjs:57:1'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-uZ8dlG/tests/core.test.mjs:58:1'
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
@@ -17,7 +17,7 @@ not ok 1 - Q02 rider counts are separate
   actual: 2
   operator: 'strictEqual'
   stack: |-
-    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-qrKji0/tests/core.test.mjs:59:10)
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-uZ8dlG/tests/core.test.mjs:60:10)
     Test.runInAsyncScope (node:async_hooks:214:14)
     Test.run (node:internal/test_runner/test:1047:25)
     Test.start (node:internal/test_runner/test:944:17)
@@ -31,4 +31,4 @@ not ok 1 - Q02 rider counts are separate
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 42.284958
+# duration_ms 48.381125

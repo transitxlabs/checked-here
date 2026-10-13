@@ -2,9 +2,9 @@ TAP version 13
 # Subtest: E03 JSON schema preserves check-ins and shifts
 not ok 1 - E03 JSON schema preserves check-ins and shifts
   ---
-  duration_ms: 2.576625
+  duration_ms: 3.053667
   type: 'test'
-  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-vtqZK6/tests/core.test.mjs:72:1'
+  location: '/private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-MNCefh/tests/core.test.mjs:73:1'
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly deep-equal:
@@ -46,7 +46,7 @@ not ok 1 - E03 JSON schema preserves check-ins and shifts
           0: 'lighting'
           1: 'help'
         knows_help: 'yes'
-        noticed_board: 'no'
+        noticed_board: 'yes'
         trust: 3
         checked_meaning: 'on-site'
     shifts:
@@ -78,7 +78,7 @@ not ok 1 - E03 JSON schema preserves check-ins and shifts
           0: 'lighting'
           1: 'help'
         knows_help: 'yes'
-        noticed_board: 'no'
+        noticed_board: 'yes'
         trust: 3
         checked_meaning: 'on-site'
     shifts:
@@ -94,7 +94,7 @@ not ok 1 - E03 JSON schema preserves check-ins and shifts
         refusals: 25
   operator: 'deepStrictEqual'
   stack: |-
-    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-vtqZK6/tests/core.test.mjs:74:10)
+    TestContext.<anonymous> (file:///private/var/folders/kd/qd262f_j37xd6gc0cs67rmt80000gn/T/checkin-fault-MNCefh/tests/core.test.mjs:75:10)
     Test.runInAsyncScope (node:async_hooks:214:14)
     Test.run (node:internal/test_runner/test:1047:25)
     Test.start (node:internal/test_runner/test:944:17)
@@ -108,4 +108,4 @@ not ok 1 - E03 JSON schema preserves check-ins and shifts
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 42.520917
+# duration_ms 48.070791

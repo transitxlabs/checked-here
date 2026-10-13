@@ -1,0 +1,128 @@
+[
+  {
+    "route": "staff",
+    "answer": "yes",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": false,
+    "fields": [
+      {
+        "name": "trust",
+        "required": true,
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": true,
+        "disabled": false,
+        "value": ""
+      }
+    ]
+  },
+  {
+    "route": "staff",
+    "answer": "no",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": true,
+    "fields": [
+      {
+        "name": "trust",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      }
+    ]
+  },
+  {
+    "route": "staff",
+    "answer": "not-sure",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": true,
+    "fields": [
+      {
+        "name": "trust",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      }
+    ]
+  },
+  {
+    "route": "rider",
+    "answer": "yes",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": false,
+    "fields": [
+      {
+        "name": "trust",
+        "required": true,
+        "disabled": false,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": true,
+        "disabled": false,
+        "value": ""
+      }
+    ]
+  },
+  {
+    "route": "rider",
+    "answer": "no",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": true,
+    "fields": [
+      {
+        "name": "trust",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      }
+    ]
+  },
+  {
+    "route": "rider",
+    "answer": "not-sure",
+    "width": 320,
+    "scrollWidth": 320,
+    "hidden": true,
+    "fields": [
+      {
+        "name": "trust",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      },
+      {
+        "name": "checked_meaning",
+        "required": false,
+        "disabled": true,
+        "value": ""
+      }
+    ]
+  }
+]

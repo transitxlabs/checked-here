@@ -1,5 +1,6 @@
 import strings from './locales/en.mjs';
-import {STATIONS,BANDS,REASONS,ANSWERS,CHECKED,today,validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,toCSV,SHIFT_COLUMNS,dictionaryCSV,dictionaryMarkdown,prepareImport,demoRecords} from './core.mjs';
+import {questionsHTML,updateConditionalQuestions,conditionalAnswers} from './form.mjs';
+import {STATIONS,BANDS,today,validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,toCSV,SHIFT_COLUMNS,dictionaryCSV,dictionaryMarkdown,prepareImport,demoRecords} from './core.mjs';
 import {openStorage,readAll,addRecords,clearRecords} from './storage.mjs';
 const t = key => strings[key];
 const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
@@ -21,11 +22,9 @@ function input(k,type,hint='',attrs='') {
 function context(staff, shift=false) {
   return `<div class="context"><div>${select('station',STATIONS)}</div>${staff?`<div>${select('round',[1,2])}</div><div>${input('date','date','',`max="${today()}"`)}</div>`:''}<div>${select('time_band',BANDS)}</div>${staff?`<div>${input('staff_code','text','staffHint','maxlength="5" autocomplete="off" pattern="[A-Z][0-9]{2,4}"')}</div>${shift?'':`<div>${input('card_number','number','cardHint','min="1" step="1"')}</div>`}`:''}</div>`;
 }
-function question(k,content) { return `<fieldset><legend>${escape(t(k))}</legend>${content}${errorHTML(k)}</fieldset>`; }
-function questionSelect(k,values) { return question(k,`<select name="${k}" id="${k}" aria-label="${escape(t(k))}" aria-describedby="error-${k}"><option value="">${escape(t('choose'))}</option>${values.map(v=>`<option value="${v}">${escape(labelFor(String(v)))}</option>`).join('')}</select>`); }
 function capture() {
   const staff=route==='staff';
-  view.innerHTML=`<h2>${escape(t(staff?'staffRoute':'riderRoute'))}</h2><p>${escape(t(staff?'staffIntro':'riderIntro'))}</p><p class="badge-local">${escape(t('routeContext'))}</p><form id="capture" novalidate>${context(staff)}${question('safety',`<input name="safety" id="safety" type="number" min="1" max="10" step="1" aria-label="${escape(t('safety'))}" aria-describedby="error-safety">`)}${question('reasons',REASONS.map(r=>`<label class="check"><input type="checkbox" name="reasons" value="${r}" aria-describedby="error-reasons">${escape(t(r))}</label>`).join(''))}${questionSelect('knows_help',ANSWERS)}${questionSelect('noticed_board',ANSWERS)}${questionSelect('trust',[1,2,3,4,5,'no-opinion'])}${questionSelect('checked_meaning',CHECKED)}<button type="submit">${escape(t('save'))}</button></form>${staff?`<section><h2>${escape(t('shiftHeading'))}</h2><p>${escape(t('shiftIntro'))}</p><form id="shift" novalidate>${context(true,true)}<div class="context"><div>${input('asks','number','','min="0" step="1"')}</div><div>${input('refusals','number','','min="0" step="1"')}</div></div><button type="submit">${escape(t('shiftSave'))}</button></form></section>`:''}`;
+  view.innerHTML=`<h2>${escape(t(staff?'staffRoute':'riderRoute'))}</h2><p>${escape(t(staff?'staffIntro':'riderIntro'))}</p><p>${escape(t('cardHeader'))}</p><p class="badge-local">${escape(t('routeContext'))}</p><form id="capture" novalidate>${context(staff)}${questionsHTML(staff,strings)}<button type="submit">${escape(t('save'))}</button></form>${staff?`<section><h2>${escape(t('shiftHeading'))}</h2><p>${escape(t('shiftIntro'))}</p><form id="shift" novalidate>${context(true,true)}<div class="context"><div>${input('asks','number','','min="0" step="1"')}</div><div>${input('refusals','number','','min="0" step="1"')}</div></div><button type="submit">${escape(t('shiftSave'))}</button></form></section>`:''}`;
   // Separate form IDs keep labels and error descriptions unambiguous.
   const shiftForm=view.querySelector('#shift');
   if(shiftForm) {
@@ -37,12 +36,16 @@ function capture() {
     if(form.elements.date) form.elements.date.value=today();
     if(STATIONS.includes(stationFromURL)) form.elements.station.value=stationFromURL;
   }
-  view.querySelector('#capture').addEventListener('submit',event=>run(async()=>{
+  const captureForm=view.querySelector('#capture');
+  updateConditionalQuestions(captureForm);
+  captureForm.elements.noticed_board.addEventListener('change',()=>updateConditionalQuestions(captureForm));
+  captureForm.addEventListener('submit',event=>run(async()=>{
     event.preventDefault(); const form=event.currentTarget;
     await refresh(); const r=recordFrom(form,staff);
     if(showErrors(form,validateCheckin(r,data.checkins))) return;
     await addRecords({checkins:[r]}); lastExport=null; await refresh();
     form.reset(); if(staff) form.elements.date.value=today(); if(STATIONS.includes(stationFromURL)) form.elements.station.value=stationFromURL;
+    updateConditionalQuestions(form);
     message('saved');
   },event));
   shiftForm?.addEventListener('submit',event=>run(async()=>{
@@ -55,7 +58,7 @@ function capture() {
 function numberFrom(form,k) { return form.elements[k].value === '' ? NaN : Number(form.elements[k].value); }
 function contextFrom(form) { return {station:form.elements.station.value,round:numberFrom(form,'round'),date:form.elements.date.value,time_band:form.elements.time_band.value,staff_code:form.elements.staff_code.value}; }
 function recordFrom(form,staff) {
-  return {id:crypto.randomUUID(),source:staff?'staff':'rider-link',synthetic:true,...(staff?contextFrom(form):{station:form.elements.station.value,round:null,date:today(),time_band:form.elements.time_band.value,staff_code:null}),card_number:staff?numberFrom(form,'card_number'):null,safety:numberFrom(form,'safety'),reasons:[...form.querySelectorAll('[name="reasons"]:checked')].map(el=>el.value),knows_help:form.elements.knows_help.value,noticed_board:form.elements.noticed_board.value,trust:form.elements.trust.value==='no-opinion'?'no-opinion':numberFrom(form,'trust'),checked_meaning:form.elements.checked_meaning.value};
+  return {id:crypto.randomUUID(),source:staff?'staff':'rider-link',synthetic:true,...(staff?contextFrom(form):{station:form.elements.station.value,round:null,date:today(),time_band:form.elements.time_band.value,staff_code:null}),card_number:staff?numberFrom(form,'card_number'):null,safety:numberFrom(form,'safety'),reasons:[...form.querySelectorAll('[name="reasons"]:checked')].map(el=>el.value),knows_help:form.elements.knows_help.value,noticed_board:form.elements.noticed_board.value,...conditionalAnswers(form.elements.noticed_board.value,form.elements.trust.value==='no-opinion'?'no-opinion':numberFrom(form,'trust'),form.elements.checked_meaning.value)};
 }
 function showErrors(form,errors) {
   form.querySelectorAll('.error').forEach(el=>{el.hidden=true;el.textContent='';});

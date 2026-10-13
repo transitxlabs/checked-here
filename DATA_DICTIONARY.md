@@ -24,8 +24,8 @@
 | checkins | reason_something_else | integer | 0; 1 | Selected reason indicator. |
 | checkins | knows_help | enum | yes; no; not-sure | Knowledge of how to get help. |
 | checkins | noticed_board | enum | yes; no; not-sure | Noticed a board with dated updates. |
-| checkins | trust | enum | 1; 2; 3; 4; 5; no-opinion | Trust in station updates. |
-| checkins | checked_meaning | enum | on-site; rated-safe; not-sure | Interpretation of Checked. |
+| checkins | trust | enum | 1; 2; 3; 4; 5; no-opinion; empty unless noticed_board=yes | Trust in station updates. Asked only after a Yes on question 4; empty (null) otherwise. |
+| checkins | checked_meaning | enum | on-site; rated-safe; not-sure; empty unless noticed_board=yes | Interpretation of Checked. Asked only after a Yes on question 4; empty (null) otherwise. |
 | shifts | id | UUID | UUID, version 4 | Stable record identifier used for cross-device duplicate detection. |
 | shifts | synthetic | boolean | true | Synthetic practice data marker. |
 | shifts | station | enum | S1; S2; S3; S4 | Placeholder station. |

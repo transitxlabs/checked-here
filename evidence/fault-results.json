@@ -144,6 +144,118 @@
     "detected": true
   },
   {
+    "test": "V08",
+    "file": "js/core.mjs",
+    "removed": "if (r.noticed_board === 'yes')",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V09",
+    "file": "js/core.mjs",
+    "removed": "if (r.noticed_board === 'yes')",
+    "planted": "if (true)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V10",
+    "file": "js/core.mjs",
+    "removed": "if (r.trust !== null)",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I04",
+    "file": "js/core.mjs",
+    "removed": "if (Object.keys(errors).length)",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I05",
+    "file": "js/core.mjs",
+    "removed": "r.checked_meaning === '' ? null : r.checked_meaning",
+    "planted": "r.checked_meaning",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I06",
+    "file": "js/core.mjs",
+    "removed": "if (r.trust !== null)",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "E04",
+    "file": "js/core.mjs",
+    "removed": "v == null ? '' : String(v)",
+    "planted": "v == null ? 'null' : String(v)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "D02",
+    "file": "js/locales/en.mjs",
+    "removed": "Asked only after a Yes on question 4; empty (null) otherwise.",
+    "planted": "Always required.",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "S02",
+    "file": "js/core.mjs",
+    "removed": "trust:noticed_board==='yes'?(card_number%6 === 0?'no-opinion':1+(card_number%5)):null",
+    "planted": "trust:1+(card_number%5)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "F01",
+    "file": "js/form.mjs",
+    "removed": "escape(locale.riderHelp)",
+    "planted": "escape('')",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "F02",
+    "file": "js/form.mjs",
+    "removed": "escape(locale.riderUrgent)",
+    "planted": "escape('')",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "F03",
+    "file": "js/form.mjs",
+    "removed": "control.required=asked",
+    "planted": "control.required=false",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "F04",
+    "file": "js/form.mjs",
+    "removed": "trust:noticed_board==='yes'?trust:null",
+    "planted": "trust",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "F05",
+    "file": "js/locales/en.mjs",
+    "removed": "cardHeader: 'A short, voluntary card.'",
+    "planted": "cardHeader: 'About one minute.'",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
     "test": "O01",
     "file": "sw.js",
     "removed": "'./js/storage.mjs',",

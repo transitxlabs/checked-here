@@ -1,11 +1,12 @@
 import test from 'node:test';
+import {questionsHTML,updateConditionalQuestions,conditionalAnswers} from '../js/form.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import en from '../js/locales/en.mjs';
 import second from '../js/locales/second.mjs';
 import {validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,parseCSV,prepareImport,dictionary,dictionaryCSV,dictionaryMarkdown,COLUMNS,SHIFT_COLUMNS,REASONS,demoRecords,toCSV,csvCell} from '../js/core.mjs';
 const now='2026-10-13';
-const fixture=()=>({id:'12345678-1234-4234-8234-123456789012',source:'staff',synthetic:true,station:'S2',round:1,date:'2026-10-01',time_band:'weekday-morning',staff_code:'F01',card_number:1,safety:8,reasons:['lighting','help'],knows_help:'yes',noticed_board:'no',trust:3,checked_meaning:'on-site'});
+const fixture=()=>({id:'12345678-1234-4234-8234-123456789012',source:'staff',synthetic:true,station:'S2',round:1,date:'2026-10-01',time_band:'weekday-morning',staff_code:'F01',card_number:1,safety:8,reasons:['lighting','help'],knows_help:'yes',noticed_board:'yes',trust:3,checked_meaning:'on-site'});
 const bundle=rows=>exportJSON(rows,[]);
 const read=r=>prepareImport(bundle(r),'json',undefined,now);
 
@@ -121,6 +122,105 @@ test('L01 second locale has matching pending keys',()=>{
 });
 test('O01 service worker caches every runtime module',()=>{
   const worker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
-  for(const file of ['index.html','styles.css','icon.svg','js/app.mjs','js/core.mjs','js/storage.mjs','js/locales/en.mjs','js/locales/second.mjs']) assert.ok(worker.includes(`'./${file}'`),file);
+  for(const file of ['index.html','styles.css','icon.svg','js/app.mjs','js/form.mjs','js/core.mjs','js/storage.mjs','js/locales/en.mjs','js/locales/second.mjs']) assert.ok(worker.includes(`'./${file}'`),file);
   assert.ok(worker.includes("event.request.mode==='navigate'"));
+});
+
+test('V08 questions 5 and 6 required after Yes on both routes',()=>{
+  for(const source of ['staff','rider-link']) {
+    const r=source==='staff'?fixture():{...fixture(),source,round:null,staff_code:null,card_number:null};
+    assert.deepEqual(validateCheckin(r,[],now),{});
+    for(const k of ['trust','checked_meaning']) for(const value of [null,'',undefined]) assert.ok(validateCheckin({...r,[k]:value},[],now)[k]);
+  }
+});
+test('V09 questions 5 and 6 empty and not required otherwise',()=>{
+  for(const source of ['staff','rider-link']) for(const noticed_board of ['no','not-sure']) {
+    const r={...fixture(),source,noticed_board,trust:null,checked_meaning:null,...(source==='rider-link'?{round:null,staff_code:null,card_number:null}:{})};
+    assert.deepEqual(validateCheckin(r,[],now),{});
+  }
+});
+test('V10 values when question 4 is not Yes rejected on save',()=>{
+  for(const source of ['staff','rider-link']) for(const noticed_board of ['no','not-sure']) for(const k of ['trust','checked_meaning']) {
+    const r={...fixture(),source,noticed_board,trust:null,checked_meaning:null,...(source==='rider-link'?{round:null,staff_code:null,card_number:null}:{})};
+    for(const value of [fixture()[k],'',undefined]) assert.ok(validateCheckin({...r,[k]:value},[],now)[k]);
+  }
+});
+test('I04 questions 5 and 6 required after Yes on import',()=>{
+  for(const source of ['staff','rider-link']) for(const k of ['trust','checked_meaning']) {
+    const r={...fixture(),source,[k]:null,...(source==='rider-link'?{round:null,staff_code:null,card_number:null}:{})};
+    for(const format of ['json','csv']) assert.throws(()=>prepareImport(format==='json'?bundle([r]):exportCSV([r]),format,undefined,now),/invalidFile/);
+  }
+});
+test('I05 empty conditional answers round trip on import',()=>{
+  for(const source of ['staff','rider-link']) for(const noticed_board of ['no','not-sure']) {
+    const r={...fixture(),source,noticed_board,trust:null,checked_meaning:null,...(source==='rider-link'?{round:null,staff_code:null,card_number:null}:{})};
+    for(const format of ['json','csv']) assert.deepEqual(prepareImport(format==='json'?bundle([r]):exportCSV([r]),format,undefined,now).checkins,[r]);
+  }
+});
+test('I06 values when question 4 is not Yes rejected on import',()=>{
+  for(const source of ['staff','rider-link']) for(const noticed_board of ['no','not-sure']) for(const k of ['trust','checked_meaning']) {
+    const r={...fixture(),source,noticed_board,trust:null,checked_meaning:null,[k]:fixture()[k],...(source==='rider-link'?{round:null,staff_code:null,card_number:null}:{})};
+    for(const format of ['json','csv']) assert.throws(()=>prepareImport(format==='json'?bundle([r]):exportCSV([r]),format,undefined,now),/invalidFile/);
+  }
+});
+test('E04 conditional answers export as empty CSV cells',()=>{
+  for(const noticed_board of ['no','not-sure']) {
+    const [header,row]=parseCSV(exportCSV([{...fixture(),noticed_board,trust:null,checked_meaning:null}]));
+    for(const k of ['trust','checked_meaning']) assert.equal(row[header.indexOf(k)],'');
+  }
+});
+test('D02 dictionary explains conditional answers and emptiness',()=>{
+  for(const column of ['trust','checked_meaning']) {
+    const row=dictionary().find(r=>r.column===column);
+    assert.match(row.description,/Asked only after a Yes on question 4; empty \(null\) otherwise\./);
+    assert.match(row.allowed_values,/empty unless noticed_board=yes/);
+  }
+});
+test('S02 demo has all question 4 choices and consistent follow-ups',()=>{
+  for(const source of ['staff','rider-link']) {
+    const rows=demoRecords().checkins.filter(r=>r.source===source);
+    assert.deepEqual([...new Set(rows.map(r=>r.noticed_board))].sort(),['no','not-sure','yes']);
+    for(const r of rows) {
+      if(r.noticed_board==='yes') {assert.notEqual(r.trust,null);assert.notEqual(r.checked_meaning,null);}
+      else {assert.equal(r.trust,null);assert.equal(r.checked_meaning,null);}
+    }
+  }
+});
+
+test('F01 rider help-line placeholder before the first question',()=>{
+  const line='[Emergency and non-emergency help lines approved by the client go here]';
+  const html=questionsHTML(false);assert.ok(html.includes(`<p>${line}</p>`));assert.ok(html.indexOf(line)<html.indexOf('<fieldset>'));
+  assert.ok(!questionsHTML(true).includes(line));
+});
+test('F02 rider urgent-help notice before the first question',()=>{
+  const line='Nobody watches this form for urgent help.';
+  const html=questionsHTML(false);assert.ok(html.includes(`<p>${line}</p>`));assert.ok(html.indexOf(line)<html.indexOf('<fieldset>'));
+  assert.ok(!questionsHTML(true).includes(line));
+});
+test('F03 conditional form hides clears and requires follow-ups',()=>{
+  for(const staff of [true,false]) {
+    const html=questionsHTML(staff),hint='Answer 5 and 6 only if you answered Yes to question 4.';
+    assert.ok(html.includes(hint));assert.ok(html.indexOf(hint)<html.indexOf('name="trust"'));
+    const section={hidden:true},errors={trust:{},checked_meaning:{}},elements={noticed_board:{value:'yes'},trust:{value:'3',removeAttribute(){}},checked_meaning:{value:'on-site',removeAttribute(){}}};
+    const form={elements,querySelector:s=>s==='#conditional-questions'?section:errors[s.slice(7)]};
+    updateConditionalQuestions(form);assert.equal(section.hidden,false);
+    for(const k of ['trust','checked_meaning']) {assert.equal(elements[k].required,true);assert.equal(elements[k].disabled,false);assert.notEqual(elements[k].value,'');}
+    for(const answer of ['no','not-sure','']) {
+      elements.noticed_board.value=answer;elements.trust.value='3';elements.checked_meaning.value='on-site';
+      updateConditionalQuestions(form);assert.equal(section.hidden,true);
+      for(const k of ['trust','checked_meaning']) {assert.equal(elements[k].required,false);assert.equal(elements[k].disabled,true);assert.equal(elements[k].value,'');assert.equal(errors[k].hidden,true);}
+    }
+  }
+});
+test('F04 form stores null conditional answers when not asked',()=>{
+  assert.deepEqual(conditionalAnswers('yes',3,'on-site'),{trust:3,checked_meaning:'on-site'});
+  for(const answer of ['no','not-sure','']) assert.deepEqual(conditionalAnswers(answer,3,'on-site'),{trust:null,checked_meaning:null});
+  const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
+  assert.ok(app.includes('...conditionalAnswers(form.elements.noticed_board.value,'));
+  assert.ok(app.includes("addEventListener('change',()=>updateConditionalQuestions(captureForm))"));
+});
+test('F05 both card headers use the short voluntary wording',()=>{
+  assert.equal(en.cardHeader,'A short, voluntary card.');
+  const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
+  assert.ok(app.includes("<p>${escape(t('cardHeader'))}</p>"));
 });

@@ -1,4 +1,3 @@
-// Replace pending values with approved translations before selecting this locale.
 export default {
   "lang": "translation pending",
   "navigation": "translation pending",
@@ -15,6 +14,10 @@ export default {
   "dataRoute": "translation pending",
   "staffIntro": "translation pending",
   "riderIntro": "translation pending",
+  "cardHeader": "translation pending",
+  "riderHelp": "translation pending",
+  "riderUrgent": "translation pending",
+  "conditionalHint": "translation pending",
   "routeContext": "translation pending",
   "station": "translation pending",
   "round": "translation pending",

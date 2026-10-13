@@ -32,8 +32,13 @@ export function validateCheckin(r, existing = [], now = today()) {
   if (!Number.isInteger(r.safety) || r.safety < 1 || r.safety > 10) e.safety = 'invalidSafety';
   if (!Array.isArray(r.reasons) || r.reasons.length < 1 || r.reasons.length > 3 || new Set(r.reasons).size !== r.reasons.length || r.reasons.some(x => !REASONS.includes(x))) e.reasons = 'invalidReasons';
   for (const k of ['knows_help','noticed_board']) if (!ANSWERS.includes(r[k])) e[k] = 'invalidAnswer';
-  if (!(Number.isInteger(r.trust) && r.trust >= 1 && r.trust <= 5) && r.trust !== 'no-opinion') e.trust = 'invalidTrust';
-  if (!CHECKED.includes(r.checked_meaning)) e.checked_meaning = 'invalidAnswer';
+  if (r.noticed_board === 'yes') {
+    if (!(Number.isInteger(r.trust) && r.trust >= 1 && r.trust <= 5) && r.trust !== 'no-opinion') e.trust = 'invalidTrust';
+    if (!CHECKED.includes(r.checked_meaning)) e.checked_meaning = 'invalidAnswer';
+  } else {
+    if (r.trust !== null) e.trust = 'invalidRecord';
+    if (r.checked_meaning !== null) e.checked_meaning = 'invalidRecord';
+  }
   return e;
 }
 export function validateShift(r, now = today()) {
@@ -88,7 +93,8 @@ function csvBundle(text) {
     }
     if (!shift) {
       r.staff_code = r.staff_code || null;
-      r.trust = /^[1-5]$/.test(r.trust) ? Number(r.trust) : r.trust;
+      r.trust = r.trust === '' ? null : /^[1-5]$/.test(r.trust) ? Number(r.trust) : r.trust;
+      r.checked_meaning = r.checked_meaning === '' ? null : r.checked_meaning;
       r.reasons=[];
       for (const reason of REASONS) { const k=`reason_${reason}`; if (!['0','1'].includes(r[k])) throw Error('invalidFile'); if (r[k] === '1') r.reasons.push(reason); delete r[k]; }
     }
@@ -131,9 +137,15 @@ export function demoRecords() {
   const checkins=[],shifts=[]; let sequence=1;
   const id=()=>`00000000-0000-4000-8000-${String(sequence++).padStart(12,'0')}`;
   for (const station of STATIONS) for (const round of [1,2]) {
-    for(let card_number=1;card_number<=75;card_number++) checkins.push({id:id(),source:'staff',synthetic:true,station,round,date:'2026-01-01',time_band:BANDS[(card_number-1)%4],staff_code:'F01',card_number,safety:1+(card_number%10),reasons:[REASONS[card_number%10]],knows_help:ANSWERS[card_number%3],noticed_board:ANSWERS[(card_number+1)%3],trust:card_number%6 === 0?'no-opinion':1+(card_number%5),checked_meaning:CHECKED[card_number%3]});
+    for(let card_number=1;card_number<=75;card_number++) {
+      const noticed_board=ANSWERS[(card_number+1)%3];
+      checkins.push({id:id(),source:'staff',synthetic:true,station,round,date:'2026-01-01',time_band:BANDS[(card_number-1)%4],staff_code:'F01',card_number,safety:1+(card_number%10),reasons:[REASONS[card_number%10]],knows_help:ANSWERS[card_number%3],noticed_board,trust:noticed_board==='yes'?(card_number%6 === 0?'no-opinion':1+(card_number%5)):null,checked_meaning:noticed_board==='yes'?CHECKED[card_number%3]:null});
+    }
     shifts.push({id:id(),synthetic:true,station,round,date:'2026-01-01',time_band:'weekday-morning',staff_code:'F01',asks:100,refusals:25});
   }
-  for(const station of STATIONS) for(let i=0;i<2;i++) checkins.push({id:id(),source:'rider-link',synthetic:true,station,round:null,date:'2026-01-01',time_band:'weekend',staff_code:null,card_number:null,safety:7,reasons:['lighting'],knows_help:'yes',noticed_board:'not-sure',trust:'no-opinion',checked_meaning:'not-sure'});
+  for(const station of STATIONS) for(let i=0;i<2;i++) {
+    const noticed_board=ANSWERS[(STATIONS.indexOf(station)+i)%3];
+    checkins.push({id:id(),source:'rider-link',synthetic:true,station,round:null,date:'2026-01-01',time_band:'weekend',staff_code:null,card_number:null,safety:7,reasons:['lighting'],knows_help:'yes',noticed_board,trust:noticed_board==='yes'?'no-opinion':null,checked_meaning:noticed_board==='yes'?'not-sure':null});
+  }
   return {checkins,shifts};
 }
