@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: V01 required answers and permitted choices
+ok 1 - V01 required answers and permitted choices
+  ---
+  duration_ms: 2.64175
+  type: 'test'
+  ...
+# Subtest: V02 numeric safety and trust ranges
+ok 2 - V02 numeric safety and trust ranges
+  ---
+  duration_ms: 0.171667
+  type: 'test'
+  ...
+# Subtest: V03 one to three distinct listed reasons
+ok 3 - V03 one to three distinct listed reasons
+  ---
+  duration_ms: 0.122834
+  type: 'test'
+  ...
+# Subtest: V04 future and impossible dates
+ok 4 - V04 future and impossible dates
+  ---
+  duration_ms: 0.076
+  type: 'test'
+  ...
+# Subtest: V05 card uniqueness scoped to station and round
+ok 5 - V05 card uniqueness scoped to station and round
+  ---
+  duration_ms: 0.074667
+  type: 'test'
+  ...
+# Subtest: V06 rider route has no staff identifiers
+ok 6 - V06 rider route has no staff identifiers
+  ---
+  duration_ms: 0.057958
+  type: 'test'
+  ...
+# Subtest: V07 shift counts and refusal constraint
+ok 7 - V07 shift counts and refusal constraint
+  ---
+  duration_ms: 0.65075
+  type: 'test'
+  ...
+# Subtest: Q01 staffed quota excludes rider links and splits bands
+ok 8 - Q01 staffed quota excludes rider links and splits bands
+  ---
+  duration_ms: 0.161875
+  type: 'test'
+  ...
+# Subtest: Q02 rider counts are separate
+ok 9 - Q02 rider counts are separate
+  ---
+  duration_ms: 0.281917
+  type: 'test'
+  ...
+# Subtest: E01 CSV has all columns and binary reasons
+ok 10 - E01 CSV has all columns and binary reasons
+  ---
+  duration_ms: 0.968209
+  type: 'test'
+  ...
+# Subtest: E02 CSV quoting and malformed inputs
+ok 11 - E02 CSV quoting and malformed inputs
+  ---
+  duration_ms: 0.23
+  type: 'test'
+  ...
+# Subtest: E03 JSON schema preserves check-ins and shifts
+ok 12 - E03 JSON schema preserves check-ins and shifts
+  ---
+  duration_ms: 0.737375
+  type: 'test'
+  ...
+# Subtest: D01 dictionary lists every column with type and values
+ok 13 - D01 dictionary lists every column with type and values
+  ---
+  duration_ms: 1.209292
+  type: 'test'
+  ...
+# Subtest: I01 repeated IDs and card keys are detected
+ok 14 - I01 repeated IDs and card keys are detected
+  ---
+  duration_ms: 0.552917
+  type: 'test'
+  ...
+# Subtest: I02 conflicts abort and input data stays unchanged
+ok 15 - I02 conflicts abort and input data stays unchanged
+  ---
+  duration_ms: 0.334167
+  type: 'test'
+  ...
+# Subtest: I03 malformed imports and personal fields are rejected
+ok 16 - I03 malformed imports and personal fields are rejected
+  ---
+  duration_ms: 0.48575
+  type: 'test'
+  ...
+# Subtest: S01 synthetic demo fills 600 staffed and 8 separate riders
+ok 17 - S01 synthetic demo fills 600 staffed and 8 separate riders
+  ---
+  duration_ms: 6.670792
+  type: 'test'
+  ...
+# Subtest: L01 second locale has matching pending keys
+ok 18 - L01 second locale has matching pending keys
+  ---
+  duration_ms: 0.125542
+  type: 'test'
+  ...
+# Subtest: O01 service worker caches every runtime module
+ok 19 - O01 service worker caches every runtime module
+  ---
+  duration_ms: 0.341667
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.447917

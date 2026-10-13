@@ -1,0 +1,37 @@
+# Data dictionary
+
+| Dataset | Column | Type | Allowed values | Description |
+| --- | --- | --- | --- | --- |
+| checkins | id | UUID | UUID, version 4 | Stable record identifier used for cross-device duplicate detection. |
+| checkins | source | enum | staff; rider-link | Capture route; rider-link is outside the staffed quota. |
+| checkins | synthetic | boolean | true | Synthetic practice data marker. |
+| checkins | station | enum | S1; S2; S3; S4 | Placeholder station. |
+| checkins | round | integer | 1; 2; empty for rider-link | Staffed collection round; empty for rider-link. |
+| checkins | date | date | YYYY-MM-DD, today or earlier | Local collection date; not in the future. |
+| checkins | time_band | enum | weekday-morning; weekday-midday; weekday-evening; weekend | Collection time band. |
+| checkins | staff_code | code | one capital letter and 2 to 4 digits; empty for rider-link | Pseudonymous staff code; empty for rider-link. |
+| checkins | card_number | integer | positive integer; empty for rider-link | Card number unique within station and round; empty for rider-link. |
+| checkins | safety | integer | 1 to 10 | Current feeling of safety. |
+| checkins | reason_lighting | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_staff_nearby | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_crowding | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_too_few_people | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_behaviour | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_cleanliness | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_waiting | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_information | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_help | integer | 0; 1 | Selected reason indicator. |
+| checkins | reason_something_else | integer | 0; 1 | Selected reason indicator. |
+| checkins | knows_help | enum | yes; no; not-sure | Knowledge of how to get help. |
+| checkins | noticed_board | enum | yes; no; not-sure | Noticed a board with dated updates. |
+| checkins | trust | enum | 1; 2; 3; 4; 5; no-opinion | Trust in station updates. |
+| checkins | checked_meaning | enum | on-site; rated-safe; not-sure | Interpretation of Checked. |
+| shifts | id | UUID | UUID, version 4 | Stable record identifier used for cross-device duplicate detection. |
+| shifts | synthetic | boolean | true | Synthetic practice data marker. |
+| shifts | station | enum | S1; S2; S3; S4 | Placeholder station. |
+| shifts | round | integer | 1; 2 | Staffed collection round; empty for rider-link. |
+| shifts | date | date | YYYY-MM-DD, today or earlier | Local collection date; not in the future. |
+| shifts | time_band | enum | weekday-morning; weekday-midday; weekday-evening; weekend | Collection time band. |
+| shifts | staff_code | code | one capital letter and 2 to 4 digits | Pseudonymous staff code; empty for rider-link. |
+| shifts | asks | integer | non-negative integer | Number of asks in this shift. |
+| shifts | refusals | integer | non-negative integer | Number of refusals in this shift. |

@@ -1,0 +1,154 @@
+[
+  {
+    "test": "V01",
+    "file": "js/core.mjs",
+    "removed": "if (!STATIONS.includes(r.station))",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V02",
+    "file": "js/core.mjs",
+    "removed": "r.safety > 10",
+    "planted": "r.safety > 11",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V03",
+    "file": "js/core.mjs",
+    "removed": "r.reasons.length > 3",
+    "planted": "r.reasons.length > 4",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V04",
+    "file": "js/core.mjs",
+    "removed": "s <= now",
+    "planted": "true",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V05",
+    "file": "js/core.mjs",
+    "removed": "if (staff && existing.some(x => cardKey(x) === cardKey(r)))",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V06",
+    "file": "js/core.mjs",
+    "removed": "if (!staff && (r.round !== null || r.staff_code !== null || r.card_number !== null))",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "V07",
+    "file": "js/core.mjs",
+    "removed": "if (r.refusals > r.asks)",
+    "planted": "if (false)",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "Q01",
+    "file": "js/core.mjs",
+    "removed": "r.source === 'staff' && r.station === station && r.round === round",
+    "planted": "r.station === station && r.round === round",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "Q02",
+    "file": "js/core.mjs",
+    "removed": "r.source === 'rider-link' && r.station === station",
+    "planted": "r.station === station",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "E01",
+    "file": "js/core.mjs",
+    "removed": "Number(r.reasons.includes(c.slice(7)))",
+    "planted": "0",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "E02",
+    "file": "js/core.mjs",
+    "removed": "s.replaceAll('\"','\"\"')",
+    "planted": "s",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "E03",
+    "file": "js/core.mjs",
+    "removed": "schema_version:1,checkins,shifts",
+    "planted": "schema_version:2,checkins,shifts",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "D01",
+    "file": "js/core.mjs",
+    "removed": "['checkins',COLUMNS]",
+    "planted": "['checkins',COLUMNS.slice(1)]",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I01",
+    "file": "js/core.mjs",
+    "removed": "result.duplicates++; continue;",
+    "planted": "continue;",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I02",
+    "file": "js/core.mjs",
+    "removed": "throw Error('conflict');",
+    "planted": "continue;",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "I03",
+    "file": "js/core.mjs",
+    "removed": "bundle.schema_version !== 1",
+    "planted": "false",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "S01",
+    "file": "js/core.mjs",
+    "removed": "card_number<=75",
+    "planted": "card_number<=74",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "L01",
+    "file": "js/locales/second.mjs",
+    "removed": "\"title\": \"translation pending\",",
+    "planted": "",
+    "exit_code": 1,
+    "detected": true
+  },
+  {
+    "test": "O01",
+    "file": "sw.js",
+    "removed": "'./js/storage.mjs',",
+    "planted": "",
+    "exit_code": 1,
+    "detected": true
+  }
+]
