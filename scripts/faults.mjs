@@ -39,7 +39,15 @@ export default [
  ['C01','js/questions.mjs','prompt:locale.safety,',"prompt:'Wrong question',"],
  ['B01','js/core.mjs',"r.status==='not-done' && !r.reason.trim()",'false'],
  ['B02','js/core.mjs','return [...history,{...event}];','return [{...event}];'],
- ['B03','js/core.mjs','toCSV(currentActions(history,station),BOARD_COLUMNS)','toCSV(currentActions(history,station),ACTION_COLUMNS)'],
+ ['B03','js/core.mjs','updated_at:offsetTimestamp(r.updated_at,timeZone)})),BOARD_COLUMNS)', 'updated_at:offsetTimestamp(r.updated_at,timeZone)})),ACTION_COLUMNS)'],
  ['B04','js/core.mjs','result.action_log.push(r);',''],
+ ['P01','js/dates.mjs',"Number(p.hour)<12?'a.m.':'p.m.'", "'a.m.'"],
+ ['P02','js/dates.mjs','const absolute=Math.abs(minutes)', 'const absolute=420'],
+ ['P03','js/board.mjs',"const order={checked:0,planned:1,'not-done':2}","const order={checked:2,planned:1,'not-done':0}"],
+ ['P04','js/board.mjs','${icons[status]}','${icons.checked}'],
+ ['P05','js/board.mjs','${escape(locale.syntheticBanner)}','${escape(locale.noActions)}'],
+ ['P06','js/board.mjs','tabindex="0" role="region"','tabindex="-1" role="region"'],
+ ['P07','js/core.mjs','updated_at:offsetTimestamp(r.updated_at,timeZone)','updated_at:r.updated_at'],
+ ['P08','styles.css','page:boardTabloid; font-size:18pt;','page:boardTabloid; font-size:12pt;'],
  ['O01','sw.js',"'./js/storage.mjs',",'']
 ];

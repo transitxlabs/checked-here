@@ -39,7 +39,7 @@ board,title,text,1 to 100 characters; one line,Synthetic action title; fixed aft
 board,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
 board,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
 board,reason,text,1 to 160 characters for not-done; empty otherwise; one line,Selected reason indicator.
-board,updated_at,timestamp,ISO 8601 UTC timestamp; not in the future,Date and time of the status event. Board uses the latest event. Prior events are retained.
+board,updated_at,timestamp,"ISO 8601 timestamp; stored as Z, CSV with station offset; not in the future",Date and time of the status event. Board uses the latest event. Prior events are retained. Display uses station local time; CSV includes its offset.
 action_log,id,UUID,"UUID, version 4",Stable record identifier used for cross-device duplicate detection.
 action_log,action_id,UUID,"UUID, version 4",Stable action identifier shared by all its status events.
 action_log,synthetic,boolean,true,Synthetic practice data marker.
@@ -48,4 +48,4 @@ action_log,title,text,1 to 100 characters; one line,Synthetic action title; fixe
 action_log,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
 action_log,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
 action_log,reason,text,1 to 160 characters for not-done; empty otherwise; one line,Selected reason indicator.
-action_log,updated_at,timestamp,ISO 8601 UTC timestamp; not in the future,Date and time of the status event. Board uses the latest event. Prior events are retained.
+action_log,updated_at,timestamp,"ISO 8601 timestamp; stored as Z, CSV with station offset; not in the future",Date and time of the status event. Board uses the latest event. Prior events are retained. Display uses station local time; CSV includes its offset.

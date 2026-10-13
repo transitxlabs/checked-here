@@ -3,7 +3,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import faults from './faults.mjs';
-const prefix=process.argv.includes('--v1')?'v1-':'';
+const prefix=process.argv.includes('--v11')?'v1.1-':process.argv.includes('--v1')?'v1-':'';
 const root=resolve(new URL('..',import.meta.url).pathname),results=[];
 mkdirSync(join(root,'evidence'),{recursive:true});
 for(const [name,file,before,after] of faults) {

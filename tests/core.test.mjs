@@ -243,7 +243,7 @@ test('B03 board and action log CSV have the specified columns and synthetic mark
   const demo=demoRecords();const [boardHeader,...rows]=parseCSV(boardCSV(demo.action_log,'S1'));
   assert.deepEqual(boardHeader,BOARD_COLUMNS);assert.equal(rows.length,3);assert.ok(rows.every(r=>r[boardHeader.indexOf('synthetic')]==='true'));
   const [logHeader,...logRows]=parseCSV(actionLogCSV(demo.action_log,'S1'));assert.deepEqual(logHeader,ACTION_COLUMNS);assert.equal(logRows.length,5);
-  const html=stationBoardHTML(demo.action_log,'S1',en);assert.ok(html.includes(BOARD_NOTICE));assert.ok(html.includes('2026-01-02'));assert.ok(html.includes('Synthetic record'));
+  const html=stationBoardHTML(demo.action_log,'S1',en);assert.ok(html.includes(BOARD_NOTICE));assert.ok(html.includes('2026-01-02'));assert.ok(html.includes('Demonstration: synthetic data'));
 });
 test('B04 board log exports round trip and conflicts preserve append-only history',()=>{
   const demo=demoRecords(),json=exportJSON(demo.checkins,demo.shifts,demo.action_log);
@@ -293,7 +293,7 @@ test('O02 offline cache covers every page module manifest and icon',()=>{
   const assets=['index.html','styles.css','icon.svg','manifest.webmanifest',...readdirSync(new URL('icons/',root)).map(f=>`icons/${f}`)];
   const walk=(dir)=>{for(const file of readdirSync(new URL(dir+'/',root),{withFileTypes:true})){const path=`${dir}/${file.name}`;if(file.isDirectory())walk(path);else assets.push(path);}};walk('js');
   for(const file of assets)assert.ok(worker.includes(`'./${file}'`),file);
-  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.0.0'"));assert.ok(!worker.includes('fetch(event.request)'));
+  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.1.0'"));assert.ok(!worker.includes('fetch(event.request)'));
   const manifest=JSON.parse(readFileSync(new URL('manifest.webmanifest',root),'utf8'));assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.icons.length,3);
 });
 
@@ -304,7 +304,78 @@ test('O03 worker installs assets deletes old caches and serves relative paths of
   const self={location:{origin:'http://localhost',href:base+'sw.js'},addEventListener:(type,handler)=>handlers[type]=handler,skipWaiting:async()=>{skipped=true;},clients:{claim:async()=>{claimed=true;}}};
   runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),{self,caches,URL,Response});
   const lifecycle=async type=>{let work;handlers[type]({waitUntil:promise=>work=promise});await work;};await lifecycle('install');await lifecycle('activate');
-  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.0.0','unrelated-cache']);
+  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.1.0','unrelated-cache']);
   const request=async(url,mode)=>{let response;handlers.fetch({request:{method:'GET',url,mode},respondWith:promise=>response=promise});return await response;};
   assert.equal(await(await request(base+'?s=S2','navigate')).text(),'cached ./index.html');assert.equal((await request(base+'js/card.mjs','cors')).status,200);assert.equal((await request(base+'missing.txt','cors')).status,404);assert.equal((await request('https://example.invalid/','cors')).status,403);
+});
+
+import {stationDate,offsetTimestamp,canonicalTimestamp} from '../js/dates.mjs';
+import {boardActions,statusBadgeHTML,actionLogHTML} from '../js/board.mjs';
+test('P01 station dates use plain words and the selected local zone',()=>{
+  assert.equal(stationDate('2026-01-02T22:30:00.000Z'),'2 January 2026, 2:30 p.m.');
+  assert.equal(stationDate('2026-01-02T22:30:00.000Z','America/Toronto'),'2 January 2026, 5:30 p.m.');
+  assert.equal(stationDate('2026-01-03T08:00:00.000Z'),'3 January 2026, 12:00 a.m.');
+  assert.equal(stationDate('2026-01-03T20:00:00.000Z'),'3 January 2026, 12:00 p.m.');
+  const html=stationBoardHTML([{...action(),updated_at:'2026-01-02T22:30:00.000Z'}],'S1',en);
+  assert.ok(html.includes('Last updated: <time'));assert.ok(html.includes('2 January 2026, 2:30 p.m.'));assert.ok(!html.includes(' UTC'));
+});
+test('P02 daylight time falls back on 1 November 2026 without changing the instant',()=>{
+  assert.equal(offsetTimestamp('2026-03-08T09:59:59.000Z'),'2026-03-08T01:59:59.000-08:00');
+  assert.equal(offsetTimestamp('2026-03-08T10:00:00.000Z'),'2026-03-08T03:00:00.000-07:00');
+  const before='2026-11-01T08:30:00.000Z',after='2026-11-01T09:30:00.000Z';
+  assert.equal(stationDate(before),'1 November 2026, 1:30 a.m.');assert.equal(stationDate(after),'1 November 2026, 1:30 a.m.');
+  assert.equal(offsetTimestamp(before),'2026-11-01T01:30:00.000-07:00');
+  assert.equal(offsetTimestamp(after),'2026-11-01T01:30:00.000-08:00');
+  assert.equal(offsetTimestamp('2026-11-01T09:30:00.000Z','America/St_Johns'),'2026-11-01T06:00:00.000-03:30');
+});
+test('P03 board groups statuses and orders the latest snapshots newest first',()=>{
+  const statuses=['not-done','planned','checked','checked','planned','not-done'];
+  const history=statuses.map((status,i)=>({...action(),id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,action_id:`00000000-0000-4000-8001-${String(i+1).padStart(12,'0')}`,status,title:`Action ${i}`,updated_at:`2026-01-0${i+1}T09:00:00.000Z`,reason:status==='not-done'?'Visit deferred':''}));
+  const original=structuredClone(history);
+  assert.deepEqual(boardActions(history,'S1').map(r=>r.title),['Action 3','Action 2','Action 4','Action 1','Action 5','Action 0']);
+  const html=stationBoardHTML(history,'S1',en);
+  const titles=[...html.matchAll(/<h3>([^<]+)<\/h3>/g)].map(m=>m[1]);
+  assert.deepEqual(titles,['Action 3','Action 2','Action 4','Action 1','Action 5','Action 0']);assert.deepEqual(history,original);
+  assert.ok(html.includes('6 January 2026, 1:00 a.m.'));
+});
+test('P04 every status pairs its distinct inline symbol and word in board and log',()=>{
+  const symbols={checked:'m5 12 4 4L19 6',planned:'M12 6v6l4 2','not-done':'m6 6 12 12M18 6 6 18'};
+  for(const [status,symbol] of Object.entries(symbols)) {
+    const badge=statusBadgeHTML(status,en),word=en[status.replaceAll('-','_')];
+    assert.ok(badge.includes(`<span>${word}</span>`));assert.ok(badge.includes(`<svg data-icon="${status}"`));assert.ok(badge.includes(symbol));
+    assert.ok(badge.includes('aria-hidden="true"'));assert.ok(badge.includes('focusable="false"'));
+    const row={...action(),status,reason:status==='not-done'?'Visit deferred':''};
+    assert.ok(stationBoardHTML([row],'S1',en).includes(badge));assert.ok(actionLogHTML([row],'S1',en).includes(badge));
+  }
+});
+test('P05 each printed board repeats the synthetic banner and required footer',()=>{
+  const html=stationBoardHTML(demoRecords().action_log,'S1',en),css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+  const head=html.match(/<thead>(.*?)<\/thead>/s)[1],foot=html.match(/<tfoot>(.*?)<\/tfoot>/s)[1];
+  assert.ok(head.includes('Demonstration: synthetic data'));assert.equal((html.match(/Demonstration: synthetic data/g)||[]).length,1);
+  assert.ok(foot.includes(BOARD_NOTICE));assert.ok(foot.includes('Tell us how safe you feel: [rider form link or code goes here]'));
+  assert.ok(css.includes('.poster-table thead { display:table-header-group; }'));assert.ok(css.includes('.poster-table tfoot { display:table-footer-group; }'));
+  assert.ok(!html.includes('Synthetic record'));assert.ok(!html.includes(' UTC'));
+});
+test('P06 action log has readable dates and a named keyboard scroll region',()=>{
+  const html=actionLogHTML([{...action(),updated_at:'2026-01-02T22:30:00.000Z',title:'A'.repeat(100)}],'S1',en);
+  assert.ok(html.includes('tabindex="0" role="region" aria-label="Action log"'));assert.ok(html.includes('<caption>Action log.'));
+  assert.ok(html.includes('2 January 2026, 2:30 p.m.'));assert.ok(!html.includes('Synthetic record'));
+  const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');assert.match(css,/\.table-scroll\s*\{[^}]*overflow-x:auto/);
+  assert.ok(css.includes('.action-log { max-width:100%; }'));assert.ok(css.includes('white-space:normal; overflow-wrap:anywhere;'));
+});
+test('P07 board and log CSV preserve explicit station offsets and round trip history',()=>{
+  const demo=demoRecords();
+  for(const csv of [boardCSV(demo.action_log,'S1'),actionLogCSV(demo.action_log,'S1')]) {
+    const [header,...rows]=parseCSV(csv);assert.ok(rows.every(r=>/T\d{2}:\d{2}:\d{2}\.\d{3}-08:00$/.test(r[header.indexOf('updated_at')])));
+  }
+  const csv=actionLogCSV(demo.action_log,'S1','America/Toronto');assert.ok(csv.includes('-05:00'));
+  assert.deepEqual(prepareImport(csv,'csv',undefined,now).action_log,demo.action_log.filter(r=>r.station==='S1').sort((a,b)=>a.updated_at.localeCompare(b.updated_at)));
+  for(const iso of ['2026-11-01T08:30:00.000Z','2026-11-01T09:30:00.000Z'])assert.equal(canonicalTimestamp(offsetTimestamp(iso)),iso);
+  for(const bad of ['2026-02-30T12:00:00.000-08:00','2026-01-02T12:00:00.000-14:30','2026-01-02T12:00:00.000-08:60'])assert.throws(()=>canonicalTimestamp(bad));
+});
+test('P08 board offers both print sizes with tabloid body type at least 18 pt',()=>{
+  const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8'),css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+  assert.ok(app.includes('id="board-print-size"'));assert.ok(app.includes('value="letter"'));assert.ok(app.includes('value="tabloid"'));
+  assert.ok(css.includes('@page boardTabloid { size:17in 11in;'));assert.ok(css.includes('body.print-tabloid .station-board { page:boardTabloid; font-size:18pt; }'));
+  assert.ok(app.includes("['pilotCard','pilotStaff','pilotBoard','pilotNext']"));
 });

@@ -1,3 +1,4 @@
+import {offsetTimestamp,canonicalTimestamp,DEFAULT_TIME_ZONE} from './dates.mjs';
 import en from './locales/en.mjs';
 export const STATIONS = ['S1', 'S2', 'S3', 'S4'];
 export const BANDS = ['weekday-morning', 'weekday-midday', 'weekday-evening', 'weekend'];
@@ -87,7 +88,7 @@ function sameKeys(o, keys) { return o && typeof o === 'object' && !Array.isArray
 function csvBundle(text) {
   const [header,...rows] = parseCSV(text);
   const board = header?.join(',') === ACTION_COLUMNS.join(',');
-  if(board) return {schema_version:1,checkins:[],shifts:[],action_log:rows.map(row=>{if(row.length!==header.length) throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true') throw Error('invalidSynthetic');r.synthetic=true;return r;})};
+  if(board) return {schema_version:1,checkins:[],shifts:[],action_log:rows.map(row=>{if(row.length!==header.length) throw Error('invalidFile');const r=Object.fromEntries(header.map((k,i)=>[k,row[i]]));if(r.synthetic!=='true') throw Error('invalidSynthetic');r.synthetic=true;r.updated_at=canonicalTimestamp(r.updated_at);return r;})};
   const shift = header?.join(',') === SHIFT_COLUMNS.join(',');
   if (!shift && header?.join(',') !== COLUMNS.join(',')) throw Error('invalidFile');
   const records = rows.map(row => {
@@ -192,8 +193,8 @@ export function currentActions(history,station) {
   for(const event of history) if(!latest.has(event.action_id) || event.updated_at>latest.get(event.action_id).updated_at) latest.set(event.action_id,event);
   return [...latest.values()].filter(r=>!station || r.station===station).sort((a,b)=>a.station.localeCompare(b.station)||a.title.localeCompare(b.title));
 }
-export function boardCSV(history,station) {return toCSV(currentActions(history,station),BOARD_COLUMNS);}
-export function actionLogCSV(history,station) {return toCSV(history.filter(r=>!station || r.station===station),ACTION_COLUMNS);}
+export function boardCSV(history,station,timeZone=DEFAULT_TIME_ZONE) {return toCSV(currentActions(history,station).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),BOARD_COLUMNS);}
+export function actionLogCSV(history,station,timeZone=DEFAULT_TIME_ZONE) {return toCSV(history.filter(r=>!station || r.station===station).map(r=>({...r,updated_at:offsetTimestamp(r.updated_at,timeZone)})),ACTION_COLUMNS);}
 export function demoActions() {
   const rows=[];let n=700;
   const id=()=>`00000000-0000-4000-8000-${String(n++).padStart(12,'0')}`;

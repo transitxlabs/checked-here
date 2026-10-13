@@ -1,5 +1,6 @@
+import {DEFAULT_TIME_ZONE,TIME_ZONES} from './dates.mjs';
 import {printableCardHTML} from './card.mjs';
-import {stationBoardHTML} from './board.mjs';
+import {stationBoardHTML,actionLogHTML} from './board.mjs';
 import strings from './locales/en.mjs';
 import {questionsHTML,updateConditionalQuestions,conditionalAnswers} from './form.mjs';
 import {STATIONS,BANDS,CONCERNS,ACTION_STATUSES,currentActions,validateAction,boardCSV,actionLogCSV,today,validateCheckin,validateShift,quota,riderCounts,exportCSV,exportJSON,toCSV,SHIFT_COLUMNS,dictionaryCSV,dictionaryMarkdown,prepareImport,demoRecords} from './core.mjs';
@@ -109,14 +110,18 @@ function dataView() {
   },event);
 }
 
-let boardStation='S1';
+let boardStation='S1',boardTimeZone=DEFAULT_TIME_ZONE,boardPrintSize='letter';
+function setPrintSize() {document.body.dataset.boardPrint=boardPrintSize;document.body.classList.toggle('print-tabloid',boardPrintSize==='tabloid');}
 function boardView() {
   const actions=currentActions(data.action_log,boardStation);
-  view.innerHTML=`<div class="no-print"><h2>${escape(t('boardRoute'))}</h2><p>${escape(t('boardIntro'))}</p><label for="board-station">${escape(t('boardStation'))}</label><select id="board-station">${STATIONS.map(s=>`<option ${s===boardStation?'selected':''}>${s}</option>`).join('')}</select><div class="actions"><button id="board-print">${escape(t('boardPrint'))}</button><button id="board-csv">${escape(t('exportBoard'))}</button><button id="log-csv">${escape(t('exportLog'))}</button></div></div>${stationBoardHTML(data.action_log,boardStation,strings)}<section class="no-print"><h2>${escape(t('boardForm'))}</h2><form id="board-form" novalidate><fieldset><legend>${escape(t('actionChoice'))}</legend><label for="action-choice">${escape(t('actionChoice'))}</label><select id="action-choice"><option value="">${escape(t('newAction'))}</option>${actions.map(r=>`<option value="${r.action_id}">${escape(r.title)}</option>`).join('')}</select></fieldset><div class="context"><div>${input('title','text','','maxlength="100"')}</div><div>${select('concern',CONCERNS)}</div></div><fieldset><legend>${escape(t('action_status'))}</legend>${select('action_status',ACTION_STATUSES)}</fieldset><div id="reason-wrap" hidden>${input('reason','text','','maxlength="160"')}</div><button type="submit">${escape(t('boardSave'))}</button></form></section><section class="no-print"><h2>${escape(t('actionLog'))}</h2>${table(t('actionLog'),[t('titleField'),t('action_status'),t('reason'),t('updated'),t('syntheticRecord')],data.action_log.filter(r=>r.station===boardStation).map(r=>[r.title,labelFor(r.status),r.reason,r.updated_at,t('syntheticRecord')]))}</section>`;
+  view.innerHTML=`<div class="no-print"><h2>${escape(t('boardRoute'))}</h2><p>${escape(t('boardIntro'))}</p><label for="board-station">${escape(t('boardStation'))}</label><select id="board-station">${STATIONS.map(s=>`<option ${s===boardStation?'selected':''}>${s}</option>`).join('')}</select><div class="context board-settings"><div><label for="board-time-zone">${escape(t('boardTimeZone'))}</label><select id="board-time-zone">${TIME_ZONES.map(z=>`<option value="${escape(z)}" ${z===boardTimeZone?'selected':''}>${escape(z.split('/')[1].replaceAll('_',' '))} (${escape(z)})</option>`).join('')}</select></div><div><label for="board-print-size">${escape(t('printSize'))}</label><select id="board-print-size"><option value="letter" ${boardPrintSize==='letter'?'selected':''}>${escape(t('letterPortrait'))}</option><option value="tabloid" ${boardPrintSize==='tabloid'?'selected':''}>${escape(t('tabloidLandscape'))}</option></select></div></div><p class="hint">${escape(t('demoCalendar'))}</p><div class="actions"><button id="board-print">${escape(t('boardPrint'))}</button><button id="board-csv">${escape(t('exportBoard'))}</button><button id="log-csv">${escape(t('exportLog'))}</button></div></div>${stationBoardHTML(data.action_log,boardStation,strings,boardTimeZone)}<section class="no-print"><h2>${escape(t('boardForm'))}</h2><form id="board-form" novalidate><fieldset><legend>${escape(t('actionChoice'))}</legend><label for="action-choice">${escape(t('actionChoice'))}</label><select id="action-choice"><option value="">${escape(t('newAction'))}</option>${actions.map(r=>`<option value="${r.action_id}">${escape(r.title)}</option>`).join('')}</select></fieldset><div class="context"><div>${input('title','text','','maxlength="100"')}</div><div>${select('concern',CONCERNS)}</div></div><fieldset><legend>${escape(t('action_status'))}</legend>${select('action_status',ACTION_STATUSES)}</fieldset><div id="reason-wrap" hidden>${input('reason','text','','maxlength="160"')}</div><button type="submit">${escape(t('boardSave'))}</button></form></section><section class="no-print"><h2>${escape(t('actionLog'))}</h2>${actionLogHTML(data.action_log,boardStation,strings,boardTimeZone)}</section>`;
   view.querySelector('#board-station').onchange=event=>run(async()=>{boardStation=event.target.value;await refresh();boardView();view.querySelector('#board-station').focus();});
+  setPrintSize();
+  view.querySelector('#board-time-zone').onchange=event=>{boardTimeZone=event.target.value;boardView();view.querySelector('#board-time-zone').focus();};
+  view.querySelector('#board-print-size').onchange=event=>{boardPrintSize=event.target.value;setPrintSize();};
   view.querySelector('#board-print').onclick=()=>window.print();
-  view.querySelector('#board-csv').onclick=()=>run(async()=>{await refresh();download(`board-${boardStation}.csv`,boardCSV(data.action_log,boardStation),'text/csv');message('exportDone');});
-  view.querySelector('#log-csv').onclick=()=>run(async()=>{await refresh();download(`action-log-${boardStation}.csv`,actionLogCSV(data.action_log,boardStation),'text/csv');message('exportDone');});
+  view.querySelector('#board-csv').onclick=()=>run(async()=>{await refresh();download(`board-${boardStation}.csv`,boardCSV(data.action_log,boardStation,boardTimeZone),'text/csv');message('exportDone');});
+  view.querySelector('#log-csv').onclick=()=>run(async()=>{await refresh();download(`action-log-${boardStation}.csv`,actionLogCSV(data.action_log,boardStation,boardTimeZone),'text/csv');message('exportDone');});
   const form=view.querySelector('#board-form');
   const updateReason=()=>{const required=form.elements.action_status.value==='not-done';view.querySelector('#reason-wrap').hidden=!required;form.elements.reason.disabled=!required;form.elements.reason.required=required;if(!required)form.elements.reason.value='';};
   form.elements.action_status.onchange=updateReason;updateReason();
@@ -136,11 +141,12 @@ function boardView() {
   },event);
 }
 function cardView() {
+  document.body.classList.remove('print-tabloid');
   view.innerHTML=`<div class="no-print"><h2>${escape(t('cardRoute'))}</h2><p>Synthetic demonstration card. Print a blank copy to practise staff entry.</p><button id="card-print">${escape(t('cardPrint'))}</button></div>${printableCardHTML(strings)}`;
   view.querySelector('#card-print').onclick=()=>window.print();
 }
 function home() {
-  view.innerHTML=`<div class="home"><p class="eyebrow">Checked Here / working demo</p><h2>${escape(t('homeIntro'))}</h2><div class="route-list">${[['staff','staffRoute','homeStaff'],['rider','riderRoute','homeRider'],['board','boardRoute','homeBoard']].map(([key,title,description],i)=>`<section><span class="route-number">0${i+1}</span><h3><a href="#${key}">${escape(t(title))}</a></h3><p>${escape(t(description))}</p></section>`).join('')}</div><p>Use the printable rider card, quota view and exports to explore the full workflow.</p><div class="actions"><button id="home-demo">${escape(t('demo'))}</button><a class="button" href="#card">${escape(t('cardRoute'))}</a></div><p class="hint">${escape(t('demoIntro'))}</p></div>`;
+  view.innerHTML=`<div class="home"><p class="eyebrow">Checked Here / working demo</p><h2>${escape(t('homeIntro'))}</h2><div class="route-list">${[['staff','staffRoute','homeStaff'],['rider','riderRoute','homeRider'],['board','boardRoute','homeBoard']].map(([key,title,description],i)=>`<section><span class="route-number">0${i+1}</span><h3><a href="#${key}">${escape(t(title))}</a></h3><p>${escape(t(description))}</p></section>`).join('')}</div><p>Use the printable rider card, quota view and exports to explore the full workflow.</p><div class="actions"><button id="home-demo">${escape(t('demo'))}</button><a class="button" href="#card">${escape(t('cardRoute'))}</a></div><p class="hint">${escape(t('demoIntro'))}</p><section class="pilot-steps"><h3>${escape(t('pilotHeading'))}</h3><ol>${['pilotCard','pilotStaff','pilotBoard','pilotNext'].map(k=>`<li>${escape(t(k))}</li>`).join('')}</ol></section></div>`;
   view.querySelector('#home-demo').onclick=()=>run(loadDemo);
 }
 async function loadDemo() {
@@ -158,6 +164,7 @@ async function run(action,event) {
 function render() {
   if(!['home','staff','rider','board','card','quota','data'].includes(route))route='home';
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===route?'page':'false'));
+  document.body.dataset.route=route;
   if(route==='card') cardView(); else if(route==='home') home(); else if(route==='board') boardView(); else if(route==='quota') quotas(); else if(route==='data') dataView(); else capture();
 }
 for(const [key,name] of [['home','homeRoute'],['staff','staffRoute'],['rider','riderRoute'],['board','boardRoute'],['card','cardRoute'],['quota','quotaRoute'],['data','dataRoute']]) {
@@ -175,9 +182,9 @@ if('serviceWorker' in navigator) {
     // Registration checks for a version change. Cache only local static assets.
     await navigator.serviceWorker.ready;
     if(!navigator.serviceWorker.controller) await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
-    const cache=await caches.open('transitx-checkin-v1.0.0');
+    const cache=await caches.open('transitx-checkin-v1.1.0');
     if(await cache.match(new URL('./js/card.mjs',location.href))) offline.textContent=t('offlineReady');
     else offline.textContent=t('offlinePreparing');
-    navigator.serviceWorker.addEventListener('controllerchange',async()=>{const updated=await caches.open('transitx-checkin-v1.0.0');if(await updated.match(new URL('./js/card.mjs',location.href)))offline.textContent=t('offlineReady');});
+    navigator.serviceWorker.addEventListener('controllerchange',async()=>{const updated=await caches.open('transitx-checkin-v1.1.0');if(await updated.match(new URL('./js/card.mjs',location.href)))offline.textContent=t('offlineReady');});
   } catch {offline.textContent=t('offlineError');}
 } else offline.textContent=t('offlineError');
