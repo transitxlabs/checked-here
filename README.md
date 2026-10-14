@@ -4,11 +4,13 @@ A working demonstration by TransitX Labs Inc. of a printable rider card, staff e
 
 Checked means staff verified this action on site. It is not a safety rating.
 
+Live demonstration: https://transitxlabs.github.io/checked-here/
+
 This demonstration is not approved or ready for real collection or deployment. It is not affiliated with or endorsed by any transit agency. It does not establish that a station is safe, represent a rider population or verify that a real action happened.
 
 ## Run locally or as a static site
 
-Run `python3 -m http.server 8913 --bind 127.0.0.1` in this folder and open `http://127.0.0.1:8913/`. Plain HTML, CSS and JavaScript modules need no framework, build step, installation, external font or CDN. Service workers require localhost or HTTPS; opening the file directly is unsupported. GitHub Pages can serve this folder directly, including under a repository subpath. No deployment is part of this work.
+Run `python3 -m http.server 8913 --bind 127.0.0.1` in this folder and open `http://127.0.0.1:8913/`. Plain HTML, CSS and JavaScript modules need no framework, build step, installation, external font or CDN. Service workers require localhost or HTTPS; opening the file directly is unsupported. GitHub Pages can serve this folder directly, including under a repository subpath. The demonstration is served by GitHub Pages from this repository; no other deployment is part of this work.
 
 Wait for **Offline ready** before disconnecting. The worker caches published application assets in `transitx-checkin-v1.2.1`, removes older application caches and serves cached files without a runtime network fallback. During an update, preparation waits for the new worker to control the page before checking the new cache, and checks a missing cache entry once more before reporting an error. Preparation reports an error after an installation failure or 15 seconds without a result. Keep the same browser, origin and port to retain records.
 
