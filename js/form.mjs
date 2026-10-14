@@ -7,7 +7,7 @@ function errorHTML(key) {
 }
 
 function radioScale(question, description) {
-  return `<div class="scale-options" role="radiogroup" aria-labelledby="question-${escape(question.key)}">${question.choices.map(choice => `<label class="scale-choice" for="${escape(question.key)}-${escape(choice.value)}"><input id="${escape(question.key)}-${escape(choice.value)}" name="${escape(question.key)}" type="radio" value="${escape(choice.value)}" aria-describedby="${description}"><span>${escape(choice.label)}</span></label>`).join('')}</div>`;
+  return `<div class="scale-options" role="radiogroup" aria-labelledby="question-${escape(question.key)}">${question.choices.map(choice => `<label class="scale-choice" for="${escape(question.key)}-${escape(choice.value)}" data-scale-choice="${escape(question.key)}"><input id="${escape(question.key)}-${escape(choice.value)}" name="${escape(question.key)}" type="radio" value="${escape(choice.value)}" aria-describedby="${description}"><span>${escape(choice.label)}</span></label>`).join('')}</div>`;
 }
 
 function choiceControl(question, locale, description) {
@@ -24,9 +24,11 @@ function choiceControl(question, locale, description) {
 
 export function questionsHTML(staff, locale = en) {
   const question = source => {
-    const description = `error-${source.key}${source.hint ? ` hint-${source.key}` : ''}`;
-    const hint = source.hint ? `<p class="hint" id="hint-${escape(source.key)}">${escape(source.hint)}</p>` : '';
-    const optional = `<p class="hint optional-hint">${escape(locale.optionalHint)}</p>`;
+    const riderHints = {safety: locale.riderSafetyHint, trust: locale.riderTrustHint};
+    const hintText = staff ? source.hint : (riderHints[source.key] ?? source.hint);
+    const description = `error-${source.key}${hintText ? ` hint-${source.key}` : ''}`;
+    const hint = hintText ? `<p class="hint" id="hint-${escape(source.key)}">${escape(hintText)}</p>` : '';
+    const optional = `<p class="hint optional-hint">${escape(locale.skipAnyQuestion ?? locale.optionalHint)}</p>`;
     if (source.type === 'choice') return `<div class="question question-choice${source.conditional ? ' conditional-question' : ''}" data-question="${source.number}"><label for="${escape(source.key)}" id="question-${escape(source.key)}">${source.number}. ${escape(source.prompt)}</label>${hint}${optional}${choiceControl({...source, staff}, locale, description)}${errorHTML(source.key)}</div>`;
     return `<fieldset data-question="${source.number}"${source.conditional ? ' class="conditional-question"' : ''}><legend id="question-${escape(source.key)}">${source.number}. ${escape(source.prompt)}</legend>${hint}${optional}${choiceControl({...source, staff}, locale, description)}${errorHTML(source.key)}</fieldset>`;
   };
@@ -35,6 +37,43 @@ export function questionsHTML(staff, locale = en) {
   const normal = questions.filter(source => !source.conditional).map(question).join('');
   const conditional = questions.filter(source => source.conditional).map(question).join('');
   return `${help}<p class="collection-notice">${escape(locale.notice)}</p>${normal}<div id="conditional-questions" hidden><p>${escape(locale.conditionalHint)}</p>${conditional}</div>`;
+}
+
+/**
+ * Keep a selected scale legible when colour is unavailable.  The class is a
+ * deliberate fallback for browsers without :has(), and is also useful to
+ * browser checks that emulate forced colours.
+ */
+export function syncScaleSelection(root) {
+  if (!root?.querySelectorAll) return;
+  root.querySelectorAll('[data-scale-choice]').forEach(label => {
+    const input = label.querySelector('input[type="radio"]');
+    label.classList.toggle('is-selected', !!input?.checked);
+  });
+}
+
+export function bindScaleSelection(root) {
+  if (!root?.querySelectorAll) return () => {};
+  const update = () => syncScaleSelection(root);
+  root.querySelectorAll('[data-scale-choice] input[type="radio"]').forEach(input => input.addEventListener('change', update));
+  update();
+  return update;
+}
+
+/**
+ * Return the rider's local device time band.  Out-of-hours values are left
+ * blank so the rider chooses a visit time instead of receiving an invented
+ * context.  The optional `date` argument keeps this helper deterministic in
+ * unit tests.
+ */
+export function riderTimeBand(date = new Date()) {
+  const day = date.getDay();
+  const hour = date.getHours();
+  if (hour < 6 || hour > 21) return '';
+  if (day === 0 || day === 6) return 'weekend';
+  if (hour < 10) return 'weekday-morning';
+  if (hour < 15) return 'weekday-midday';
+  return 'weekday-evening';
 }
 
 function controlValue(control) {
@@ -76,9 +115,14 @@ export function updateConditionalQuestions(form) {
     const error = form.querySelector(`#error-${key}`);
     if (!asked && error) { error.hidden = true; error.textContent = ''; }
   }
+  syncScaleSelection(form);
 }
 
 export function conditionalAnswers(noticedBoard, trust, checkedMeaning) {
   if (noticedBoard !== 'yes') return {trust: null, checked_meaning: null};
   return {trust: trust === '' || trust === undefined || trust === null ? null : trust, checked_meaning: checkedMeaning || null};
+}
+
+export function actionRequirements(status) {
+  return {reasonRequired: status === 'not-done', dueRequired: status === 'planned'};
 }

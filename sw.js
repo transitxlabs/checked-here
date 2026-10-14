@@ -1,5 +1,5 @@
-const CACHE = 'transitx-checkin-v1.2.0';
-const FILES = ['./','./index.html','./styles.css','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./js/app.mjs','./js/form.mjs','./js/core.mjs','./js/storage.mjs','./js/board.mjs','./js/dates.mjs','./js/questions.mjs','./js/card.mjs','./js/locales/en.mjs','./js/ui.mjs','./js/display-dates.mjs'];
+const CACHE = 'transitx-checkin-v1.2.1';
+const FILES = ['./','./index.html','./styles.css','./icon.svg','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./js/app.mjs','./js/form.mjs','./js/core.mjs','./js/storage.mjs','./js/board.mjs','./js/dates.mjs','./js/questions.mjs','./js/card.mjs','./js/locales/en.mjs','./js/ui.mjs','./js/print-layout.mjs','./js/display-dates.mjs'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('transitx-checkin-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

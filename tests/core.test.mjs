@@ -206,7 +206,7 @@ test('F02 rider urgent-help notice before the first question',()=>{
 });
 test('F03 conditional form hides clears and requires follow-ups',()=>{
   for(const staff of [true,false]) {
-    const html=questionsHTML(staff),hint='Answer 5 and 6 only if you answered Yes, and I read it to question 4. Otherwise you are done: thank you.';
+    const html=questionsHTML(staff),hint='Answer 5 and 6 only if you answered &quot;Yes, and I read it&quot; to question 4. Otherwise you are done: thank you.';
     assert.ok(html.includes(hint));assert.ok(html.indexOf(hint)<html.indexOf('name="trust"'));
     const section={hidden:true},errors={trust:{},checked_meaning:{}},elements={noticed_board:{value:'yes'},trust:{value:'3',removeAttribute(){}},checked_meaning:{value:'on-site',removeAttribute(){}}};
     const form={elements,querySelector:s=>s==='#conditional-questions'?section:errors[s.slice(7)]};
@@ -224,7 +224,7 @@ test('F04 form stores null conditional answers when not asked',()=>{
   for(const answer of ['yes-unread','no','not-sure','',null]) assert.deepEqual(conditionalAnswers(answer,3,'on-site'),{trust:null,checked_meaning:null});
   const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
   assert.ok(app.includes('...conditionalAnswers(form.elements.noticed_board.value,'));
-  assert.ok(app.includes("addEventListener('change',()=>updateConditionalQuestions(captureForm))"));
+  assert.ok(app.includes("addEventListener('change',updateConditionals)"));
 });
 test('F05 both card headers use the short voluntary wording',()=>{
   assert.equal(en.cardHeader,'A short, voluntary card.');
@@ -264,10 +264,10 @@ test('C01 printable card and both forms use the same six-question source',()=>{
   const questions=questionSource();assert.equal(questions.length,6);assert.deepEqual(questions[1].choices.map(c=>c.value),REASONS);
   const card=printableCardHTML();for(const q of questions){const prompt=q.prompt.replaceAll('"','&quot;');assert.ok(card.includes(prompt));assert.ok(questionsHTML(true).includes(prompt));assert.ok(questionsHTML(false).includes(prompt));for(const c of q.choices)assert.ok(card.includes(c.label));}
   assert.ok(card.includes('In an emergency, call 911.'));assert.ok(card.includes(en.riderHelp));assert.ok(card.includes(en.notice));assert.ok(card.includes('Otherwise you are done: thank you.'));
-  assert.equal(questions[0].prompt,'How safe do you feel at this station right now?');assert.equal(questions[1].prompt,'What affects how safe you feel here today?');assert.equal(questions[1].hint,'Tick up to 3, or none.');assert.equal(questions[2].prompt,'Before today, did you know how to get help at this station?');assert.equal(questions[3].prompt,"Have you seen this station's action board?");assert.equal(questions[4].prompt,'How much do you trust the updates posted at this station?');
+  assert.equal(questions[0].prompt,'How safe do you feel at this station right now?');assert.equal(questions[1].prompt,'What affects how safe you feel here today?');assert.equal(questions[1].hint,'Tick up to 3, or none.');assert.equal(questions[2].prompt,'Before today, did you know how to get help at this station?');assert.equal(questions[3].prompt,'Have you seen the Station action board here?');assert.equal(questions[4].prompt,'How much do you trust the updates posted at this station?');
   assert.deepEqual(questions[3].choices.map(c=>c.value),['yes','yes-unread','no','not-sure']);
   assert.match(questions[5].prompt,/Checked/);
-  assert.deepEqual(questions[5].choices.map(c=>c.label),['Staff went and confirmed the action was done','The station has been rated safe','The safety problem has been fixed','Not sure']);
+  assert.deepEqual(questions[5].choices.map(c=>c.label),['The station has been rated safe','A staff member inspected the completed work in person','The safety problem has been fixed','Not sure']);
   for(const module of ['form','card'])assert.ok(readFileSync(new URL(`../js/${module}.mjs`,import.meta.url),'utf8').includes('questionSource(locale)'));
 });
 
@@ -301,7 +301,7 @@ test('O02 offline cache covers every page module manifest and icon',()=>{
   const assets=['index.html','styles.css','icon.svg','manifest.webmanifest',...readdirSync(new URL('icons/',root)).map(f=>`icons/${f}`)];
   const walk=(dir)=>{for(const file of readdirSync(new URL(dir+'/',root),{withFileTypes:true})){const path=`${dir}/${file.name}`;if(file.isDirectory())walk(path);else if(path!=='js/locales/second.mjs')assets.push(path);}};walk('js');
   for(const file of assets)assert.ok(worker.includes(`'./${file}'`),file);
-  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.2.0'"));assert.ok(!worker.includes('fetch(event.request)'));
+  assert.ok(worker.includes("const CACHE = 'transitx-checkin-v1.2.1'"));assert.ok(!worker.includes('fetch(event.request)'));
   const manifest=JSON.parse(readFileSync(new URL('manifest.webmanifest',root),'utf8'));assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.icons.length,3);
 });
 
@@ -312,7 +312,7 @@ test('O03 worker installs assets deletes old caches and serves relative paths of
   const self={location:{origin:'http://localhost',href:base+'sw.js'},addEventListener:(type,handler)=>handlers[type]=handler,skipWaiting:async()=>{skipped=true;},clients:{claim:async()=>{claimed=true;}}};
   runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),{self,caches,URL,Response});
   const lifecycle=async type=>{let work;handlers[type]({waitUntil:promise=>work=promise});await work;};await lifecycle('install');await lifecycle('activate');
-  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.2.0','unrelated-cache']);
+  assert.equal(skipped,true);assert.equal(claimed,true);assert.deepEqual([...entries.keys()].sort(),['transitx-checkin-v1.2.1','unrelated-cache']);
   const request=async(url,mode)=>{let response;handlers.fetch({request:{method:'GET',url,mode},respondWith:promise=>response=promise});return await response;};
   assert.equal(await(await request(base+'?s=S2','navigate')).text(),'cached ./index.html');assert.equal((await request(base+'js/card.mjs','cors')).status,200);assert.equal((await request(base+'missing.txt','cors')).status,404);assert.equal((await request('https://example.invalid/','cors')).status,403);
 });
@@ -363,7 +363,7 @@ test('P05 each printed board repeats the synthetic banner and required footer',(
   const html=stationBoardHTML(demoRecords().action_log,'S1',en),css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
   const head=html.match(/<thead>(.*?)<\/thead>/s)[1],foot=html.match(/<tfoot>(.*?)<\/tfoot>/s)[1];
   assert.ok(head.includes('Demonstration: synthetic data'));assert.equal((html.match(/Demonstration: synthetic data/g)||[]).length,1);
-  assert.ok(foot.includes(BOARD_NOTICE));assert.ok(foot.includes('Tell us how safe you feel: [rider form link or code goes here]'));
+  assert.ok(head.includes(BOARD_NOTICE));assert.ok(!foot.includes(BOARD_NOTICE));assert.ok(foot.includes('Tell us how safe you feel: [rider form link or code goes here]'));
   assert.ok(css.includes('.poster-table thead { display:table-header-group; }'));assert.ok(css.includes('.poster-table tfoot { display:table-footer-group; }'));
   assert.ok(!html.includes('Synthetic record'));assert.ok(!html.includes(' UTC'));
 });
@@ -387,7 +387,7 @@ test('P07 board and log CSV preserve explicit station offsets and round trip his
 test('P08 board offers both print sizes with tabloid body type at least 18 pt',()=>{
   const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8'),css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
   assert.ok(app.includes('id="board-print-size"'));assert.ok(app.includes('value="letter"'));assert.ok(app.includes('value="tabloid"'));
-  assert.ok(css.includes('@page boardTabloid { size:17in 11in;'));assert.ok(css.includes('body.print-tabloid .station-board { page:boardTabloid; font-size:18pt; }'));
+  assert.ok(css.includes('@page boardTabloid { size:17in 11in;'));assert.match(css,/\.print-board-page \{[^}]*font-size:18pt/);
   assert.ok(app.includes("['pilotCard','pilotStaff','pilotBoard','pilotNext']"));
 });
 
@@ -586,11 +586,11 @@ test('A03 light form borders meet 3 to 1 contrast against the page and paper',()
 
 test('A04 board legend and question 6 use the full plain meanings',()=>{
   const html=stationBoardHTML([], 'S1', en);
-  const legend=['Checked on site: staff went to the station and confirmed this action was done, on the date shown.','Planned: this action is planned; the due date is shown.','Not done: this action will not go ahead now; the reason is shown.'];
+  const legend=['Checked on site: staff verified the action on the status date. This does not mean the problem is solved or the station is safe. No due date.','Planned: the action is planned; status date and Due by are shown.','Not done: the action will not go ahead now; status date and Why are shown, without a due date.'];
   for(const line of legend) assert.ok(html.includes(line),line);
   assert.ok(html.indexOf(en.legendChecked)<html.indexOf(BOARD_NOTICE));
-  assert.equal((html.match(new RegExp(BOARD_NOTICE.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'))||[]).length,2);
-  const q6=questionSource().find(q=>q.number===6);assert.deepEqual(q6.choices.map(c=>c.label),['Staff went and confirmed the action was done','The station has been rated safe','The safety problem has been fixed','Not sure']);
+  assert.equal((html.match(new RegExp(BOARD_NOTICE.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'))||[]).length,1);
+  const q6=questionSource().find(q=>q.number===6);assert.deepEqual(q6.choices.map(c=>c.label),['The station has been rated safe','A staff member inspected the completed work in person','The safety problem has been fixed','Not sure']);
 });
 
 test('B10 board reading puts counts and status before dated action details',()=>{
@@ -603,7 +603,7 @@ test('B10 board reading puts counts and status before dated action details',()=>
   assert.ok(html.includes('1 Checked on site, 1 Planned, 1 Not done'));
   assert.ok(html.indexOf('board-legend-wrap')<html.indexOf('board-notice'));assert.ok(html.indexOf('board-notice')<html.indexOf('<tbody'));
   assert.ok(firstAction>0&&html.indexOf('status-badge',firstAction)<html.indexOf('<h3>',firstAction));
-  assert.ok(html.includes('Updated'));assert.ok(html.includes('Due date'));assert.ok(html.includes('October 20, 2026'));assert.ok(html.includes('Access was closed.'));
+  assert.ok(html.includes('Updated'));assert.ok(html.includes('Due by'));assert.ok(html.includes('October 20, 2026'));assert.ok(html.includes('Access was closed.'));
 });
 
 test('B11 phone board is read-only and contains no staff controls or exports',()=>{
@@ -626,7 +626,7 @@ test('B12 rider card carries its exact safety title, warning, audience and staff
 test('B13 question source keeps exact wording, choices and conditional branch',()=>{
   const questions=questionSource();
   assert.equal(questions[2].prompt,'Before today, did you know how to get help at this station?');
-  assert.equal(questions[3].prompt,"Have you seen this station's action board?");
+  assert.equal(questions[3].prompt,'Have you seen the Station action board here?');
   assert.deepEqual(questions[3].choices.map(c=>c.label),['Yes, and I read it','Yes, but I did not read it','No','Not sure']);
   assert.equal(questions[4].conditional,true);assert.equal(questions[5].conditional,true);
   assert.deepEqual(conditionalAnswers('yes',null,null),{trust:null,checked_meaning:null});
@@ -635,7 +635,7 @@ test('B13 question source keeps exact wording, choices and conditional branch',(
 
 test('B14 time band choices state the four approved hour ranges',()=>{
   const hours={weekday_morning:'06:00 to 09:59',weekday_midday:'10:00 to 14:59',weekday_evening:'15:00 to 21:59',weekend:'06:00 to 21:59'};
-  const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');assert.ok(app.includes("select('time_band',BANDS,'timeBandHint')"));
+  const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');assert.ok(app.includes("'timeBandHint'"));
   for(const [key,range] of Object.entries(hours)) assert.ok(en[key].includes(range),key);
   assert.ok(readFileSync(new URL('../README.md',import.meta.url),'utf8').includes('weekday morning 06:00 to 09:59'));
 });
@@ -643,17 +643,17 @@ test('B14 time band choices state the four approved hour ranges',()=>{
 test('B15 form errors use numbered labels, a single summary announcement and route title state',()=>{
   const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
   for(const [key,number] of Object.entries({safety:1,reasons:2,knows_help:3,noticed_board:4,trust:5,checked_meaning:6})) assert.ok(app.includes(`${key}:${number}`),key);
-  assert.ok(app.includes("announce('');"));assert.ok(app.includes("summary.setAttribute('role','alert')"));assert.ok(app.includes('summary.focus();'));
+  assert.ok(app.includes("announce('');"));assert.ok(!app.includes("summary.setAttribute('role','alert')"));assert.ok(app.includes('summary.focus();'));
   assert.ok(app.includes('updateTitle(Object.keys(errors).length>0||!!view.querySelector(\'.error-summary\'));'));
   assert.equal(pageTitle('Staff entry','Checked Here',true),'Error: Staff entry | Checked Here');
 });
 
 test('B16 tabloid board typography gives the legend and notice 24 points and body text 18',()=>{
   const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
-  assert.match(css,/body\.print-tabloid \.board-legend-wrap h3,body\.print-tabloid \.board-legend,body\.print-tabloid \.board-notice \{ font-size:24pt; \}/);
-  assert.match(css,/body\.print-tabloid \.station-board \{ page:boardTabloid; font-size:18pt; \}/);
-  const status=css.match(/body\.print-tabloid \.action-card>\.action-status \{ font-size:(\d+)pt; \}/),title=css.match(/body\.print-tabloid \.action-card h3 \{ font-size:(\d+)pt;/);
-  assert.ok(status&&title);assert.ok(Number(status[1])>=Number(title[1]));
+  assert.match(css,/body\.print-tabloid \.print-board-page \.board-legend-wrap h3,body\.print-tabloid \.print-board-page \.board-legend \{ font-size:24pt; line-height:1; \}/);
+  assert.match(css,/\.print-board-page \{[^}]*font-size:18pt/);
+  assert.match(css,/body\.print-tabloid \.print-board-page \.action-card>\.action-status,body\.print-tabloid \.print-board-page \.action-card h3 \{ font-size:28pt; \}/);
+  assert.match(css,/body\.print-tabloid \.print-board-page \.board-footer[^}]*font-size:24pt/);
 });
 
 test('B17 synthetic actions name a station place, bounded task and observable result',()=>{
@@ -725,9 +725,9 @@ test('B23 board sorts displayed status dates while selecting the newest entered 
   assert.equal(rows[1][statusDateIndex],'2026-10-12');
 });
 
-test('U08 print panels put one action on each sheet without mutating the rows',()=>{
+test('U08 print panels pack as many complete actions as fit without mutating rows',()=>{
   const rows=[{id:'row-1'},{id:'row-2'}],original=structuredClone(rows);
-  assert.deepEqual(printPanels(rows),[[rows[0]],[rows[1]]]);
+  assert.deepEqual(printPanels(rows,{heights:[30,30],availableHeight:70}),[[rows[0],rows[1]]]);assert.deepEqual(printPanels(rows,{heights:[30,30],availableHeight:50}),[[rows[0]],[rows[1]]]);
   assert.deepEqual(rows,original);
   const app=readFileSync(new URL('../js/app.mjs',import.meta.url),'utf8');
   assert.ok(app.includes("window.addEventListener('beforeprint',()=>{if(route==='board')prepareBoardPrint(document);});"));

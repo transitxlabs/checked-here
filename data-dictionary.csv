@@ -7,19 +7,19 @@ checkins,round,integer,1; 2; empty for rider-link,Staffed collection round; empt
 checkins,date,date,"YYYY-MM-DD, today or earlier",Local collection date; not in the future.
 checkins,time_band,enum,weekday-morning; weekday-midday; weekday-evening; weekend,Collection time band.
 checkins,staff_code,code,one capital letter and 2 to 4 digits; empty for rider-link,Pseudonymous staff code; empty for rider-link.
-checkins,card_number,integer,positive integer; empty for rider-link,Card number unique within station and round; empty for rider-link.
+checkins,card_number,integer,positive integer; empty for rider-link,Collectors receive non-overlapping number blocks for each station and round from one allocation register before issue. Card numbers cannot be shared or reissued. Empty for rider-link.
 checkins,safety,integer,1 to 10; empty means no answer,Feeling of safety; empty (null) means no answer.
-checkins,reason_lighting,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_staff_nearby,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_crowding,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_too_few_people,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_behaviour,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_cleanliness,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_waiting,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_information,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_help,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,reason_something_else,integer,0; 1; empty when no question 2 answer,Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer.
-checkins,knows_help,enum,yes; no; not-sure; empty means no answer,Knowledge of how to get help before today; empty (null) means no answer.
+checkins,reason_lighting,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_staff_nearby,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_crowding,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_too_few_people,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_behaviour,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_cleanliness,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_waiting,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_information,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_help,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,reason_something_else,integer,0; 1; empty when no question 2 answer,"Selected reason indicator; all ten empty cells mean no answer; legacy all-zero rows also mean no answer. Unreadable or conflicting paper marks are saved as no answer, never guessed."
+checkins,knows_help,enum,yes; no; not-sure; empty means no answer,"Prompted, looking-back answer about help awareness before today, given after the card help box; not unaided prior awareness. Empty (null) means no answer."
 checkins,noticed_board,enum,yes; yes-unread; no; not-sure; empty means no answer,Whether the rider saw and read the station action board; empty (null) means no answer.
 checkins,trust,enum,1; 2; 3; 4; 5; no-opinion; empty means no answer; empty unless noticed_board=yes,"Trust in station updates. Asked only after Yes, and I read it on question 4; empty (null) otherwise. Optional when asked; null also means no answer."
 checkins,checked_meaning,enum,on-site; rated-safe; problem-fixed; not-sure; empty means no answer; empty unless noticed_board=yes,"Interpretation of Checked. Asked only after Yes, and I read it on question 4; empty (null) otherwise. Optional when asked; null also means no answer."
@@ -38,10 +38,10 @@ board,station,enum,S1; S2; S3; S4,Placeholder station.
 board,title,text,1 to 100 characters; one line,Synthetic action title; fixed after creation.
 board,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
 board,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
-board,reason,text,1 to 160 characters; optional for Planned; required for Not done; empty for Checked; one line,Reason for a Planned or Not done action; empty for Checked on site.
+board,reason,text,0 to 160 characters; optional for Planned and Checked; required for Not done; one line,Short reason required for Not done and optional for Planned and Checked. The public board labels it Why:.
 board,updated_at,timestamp,"ISO 8601 entry timestamp; stored as Z, CSV with station offset; not in the future",Entry timestamp for the append-only event. The board displays status_date; prior events remain in the log. CSV includes the station offset.
-board,status_date,date,"YYYY-MM-DD, today or earlier",Date of the on-site status check shown on the board.
-board,due_date,date,YYYY-MM-DD or empty,Calendar due date; empty means no due date was recorded.
+board,status_date,date,"YYYY-MM-DD, today or earlier",Status date shown on every public action line. Legacy rows use the recorded timestamp date when this field is empty.
+board,due_date,date,YYYY-MM-DD or empty,Due by date displayed only for Planned. Checked and Not done show no due date; legacy stored dates remain importable.
 action_log,id,UUID,"UUID, version 4",Stable record identifier used for cross-device duplicate detection.
 action_log,action_id,UUID,"UUID, version 4",Stable action identifier shared by all its status events.
 action_log,synthetic,boolean,true,Synthetic practice data marker.
@@ -49,9 +49,9 @@ action_log,station,enum,S1; S2; S3; S4,Placeholder station.
 action_log,title,text,1 to 100 characters; one line,Synthetic action title; fixed after creation.
 action_log,concern,enum,question 2 reason codes; other,"Concern answered, from question 2 or Other; fixed after creation."
 action_log,status,enum,planned; checked; not-done,Current status in board rows; dated status snapshot in action_log rows.
-action_log,reason,text,1 to 160 characters; optional for Planned; required for Not done; empty for Checked; one line,Reason for a Planned or Not done action; empty for Checked on site.
+action_log,reason,text,0 to 160 characters; optional for Planned and Checked; required for Not done; one line,Short reason required for Not done and optional for Planned and Checked. The public board labels it Why:.
 action_log,updated_at,timestamp,"ISO 8601 entry timestamp; stored as Z, CSV with station offset; not in the future",Entry timestamp for the append-only event. The board displays status_date; prior events remain in the log. CSV includes the station offset.
-action_log,status_date,date,"YYYY-MM-DD, today or earlier",Date of the on-site status check shown on the board.
-action_log,due_date,date,YYYY-MM-DD or empty,Calendar due date; empty means no due date was recorded.
+action_log,status_date,date,"YYYY-MM-DD, today or earlier",Status date shown on every public action line. Legacy rows use the recorded timestamp date when this field is empty.
+action_log,due_date,date,YYYY-MM-DD or empty,Due by date displayed only for Planned. Checked and Not done show no due date; legacy stored dates remain importable.
 action_log,event_number,integer,Positive event sequence number,Append-only event sequence number.
 action_log,withheld,boolean,true or false,True when a sensitive or unsafe action is withheld from the public board.

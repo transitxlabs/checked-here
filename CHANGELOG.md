@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1 - 2026-10-13
+
+- Show status dates on all board lines and due dates only for Planned, with clear reasons and neutral Checked styling.
+- Pack printed actions into matching revision sets with sheet labels, repeated legend and notice, and large type.
+- Improve rider wording, optional-answer guidance, visible save confirmations, error announcements and focus.
+- Wait for an updated offline worker before checking its cache and retain existing device records.
+- Clarify prompted help awareness, paper-card numbering and unreadable marks, and add semantic and browser verification.
+
 ## 1.2.0 - 2026-10-13
 
 - Made rider answers optional, separated blank cards from staffed completions, and kept batch context between entries.

@@ -17,6 +17,6 @@ export function questionSource(locale = en) {
     {key: 'knows_help', number: 3, prompt: locale.knows_help, type: 'choice', choices: labels(answers, locale, {yes: locale.yes_simple}), optional: true},
     {key: 'noticed_board', number: 4, prompt: locale.noticed_board, type: 'choice', choices: labels(boardAnswers, locale), optional: true},
     {key: 'trust', number: 5, prompt: locale.trust, type: 'scale', choices: labels([1, 2, 3, 4, 5], locale), hint: locale.trustScale, conditional: true, optional: true},
-    {key: 'checked_meaning', number: 6, prompt: locale.checked_meaning, type: 'choice', choices: labels(checked, locale), conditional: true, optional: true}
+    {key: 'checked_meaning', number: 6, prompt: locale.checked_meaning, type: 'choice', choices: labels(['rated-safe', ...checked.filter(value => value !== 'rated-safe')], locale), conditional: true, optional: true}
   ];
 }
