@@ -1,12 +1,51 @@
 # Checked Here
 
-A working demonstration by TransitX Labs Inc. of a printable rider card, staff entry, rider phone form, station action board, quota counts and manual exports. All records are synthetic. Do not enter real rider data, personal details or incident reports.
+Checked Here is a working demonstration by TransitX Labs Inc. It shows how station staff could collect rider cards, log station actions and post a board of what was planned, checked or not done. It includes a rider phone form, quota counts and exports. All records are synthetic. It is not approved for real use.
 
-Checked means staff verified this action on site. It is not a safety rating.
+![Station action board from the Checked Here demo with synthetic data: the status legend and Checked notice, then actions marked Planned, Checked or Not done, each with its status date.](docs/media/hero-board.png)
 
-Live demonstration: https://transitxlabs.github.io/checked-here/
+**[Try it live](https://transitxlabs.github.io/checked-here/)** (static HTML, no install). See `docs/PAGES_TODO.md` for Pages media notes.
 
-This demonstration is not approved or ready for real collection or deployment. It is not affiliated with or endorsed by any transit agency. It does not establish that a station is safe, represent a rider population or verify that a real action happened.
+[![Screen recording preview of the Checked Here demo on synthetic data](docs/media/demo-preview.gif)](https://transitxlabs.github.io/checked-here/media/demo.mp4)
+
+Captions: `docs/media/demo.en.vtt`. Checked means staff verified this action on site. It is not a safety rating.
+
+![Workflow from card allocation through board update, reprint and export](docs/media/workflow.png)
+
+![Illustration of staffed quota counts against the 75 card target after loading the synthetic demo](docs/media/quota-chart.png)
+
+| Example views (synthetic data) | |
+| --- | --- |
+| ![Staff entry form with required station, round, date, time band, staff code and card number fields](docs/media/example-staff.png) | ![Staffed quota view with completed counts per station and round](docs/media/example-quota.png) |
+| ![Rider phone form with voluntary questions that stay on the rider device](docs/media/example-rider.png) | ![Printable rider card preview for double-sided Letter printing](docs/media/example-card.png) |
+| ![Device data screen listing export and import actions](docs/media/example-data.png) | ![Component diagram of browser modules, IndexedDB storage and the offline cache](docs/media/architecture.png) |
+
+### How it works
+
+1. A collection lead gives each collector a non-overlapping numbered block of rider cards.
+2. Staff enter each card's answers; riders may skip any question.
+3. Riders may also answer on the phone form; those answers stay in the rider's browser and never reach staff devices or the staff quota.
+4. The quota view counts staffed cards with at least one rider answer as completed, against 75 per station and round.
+5. Staff log each station action as Planned, Checked or Not done, with a status date; Not done needs a reason.
+6. The Station action board opens with the status legend and the Checked notice; staff must mark unsafe or sensitive actions withheld, and those stay off the board.
+7. After every board update, reprint the whole set as numbered sheets of one print revision, check that Sheet x of y runs complete, remove the older set, and export CSV or JSON files.
+
+### Architecture
+
+Static HTML, CSS and JavaScript modules in the browser; records in IndexedDB; a service worker caches application assets for offline use. Board printing and exports use dedicated layout modules (`js/board.mjs`, `js/print-layout.mjs`, `js/storage.mjs`).
+
+### Design choices
+
+- **Local-only records:** answers and action logs stay in the browser; transfers are manual exports and imports, with no hosted collection API.
+- **Separate phone path:** rider phone answers never count toward the staffed quota or reach staff devices.
+- **Withheld actions:** unsafe or sensitive items stay in the staff log but are excluded from the public board and its CSV.
+- **Explicit Checked meaning:** the board notice states that Checked is an on-site staff mark, not a safety rating or proof that work happened.
+
+### Why it matters
+
+Riders would see what staff marked Checked at their station; the board never claims the station is safe.
+
+To regenerate showcase screenshots, charts and the local demo recording, run `python3 scripts/make_showcase_media.py` (Playwright, matplotlib and ffmpeg required). Large video output is written to `showcase-media/demo.mp4` and is not committed.
 
 ## Run locally or as a static site
 

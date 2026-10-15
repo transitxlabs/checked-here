@@ -78,7 +78,7 @@ test('E02 CSV quoting and malformed inputs',()=>{
   for(const text of ['"unterminated','a"b,c','"x"z,c']) assert.throws(()=>parseCSV(text));
 });
 test('E03 JSON schema preserves check-ins and shifts',()=>{
-  const demo=demoRecords(); const json=exportJSON([fixture()],demo.shifts.slice(0,1));
+  const demo=demoRecords(new Date('2026-10-13T12:00:00.000Z')); const json=exportJSON([fixture()],demo.shifts.slice(0,1));
   assert.deepEqual(JSON.parse(json),{schema_version:1,checkins:[fixture()],shifts:demo.shifts.slice(0,1)});
   assert.deepEqual(prepareImport(json,'json',undefined,now).shifts,demo.shifts.slice(0,1));
   assert.deepEqual(prepareImport(toCSV(demo.shifts,SHIFT_COLUMNS),'csv',undefined,now).shifts,demo.shifts);
@@ -100,7 +100,7 @@ test('I01 repeated IDs and card keys are detected',()=>{
   const sameCard={...r,id:'22345678-1234-4234-8234-123456789012'};
   assert.equal(prepareImport(bundle([sameCard]),'json',existing,now).duplicates,1);
   assert.equal(read([r,r]).duplicates,1);
-  const demo=demoRecords();assert.equal(prepareImport(exportJSON([],demo.shifts),'json',{checkins:[],shifts:demo.shifts},now).duplicates,8);
+  const demo=demoRecords(new Date('2026-10-13T12:00:00.000Z'));assert.equal(prepareImport(exportJSON([],demo.shifts),'json',{checkins:[],shifts:demo.shifts},now).duplicates,8);
 });
 test('I02 conflicts abort and input data stays unchanged',()=>{
   const r=fixture(),existing={checkins:[r],shifts:[]},snapshot=structuredClone(existing);
@@ -117,7 +117,7 @@ test('I03 malformed imports and personal fields are rejected',()=>{
   assert.throws(()=>prepareImport(exportCSV([fixture()]).replace(',true,',',false,'),'csv',undefined,now),/invalidSynthetic/);
 });
 test('S01 synthetic demo fills 600 staffed and 8 separate riders',()=>{
-  const d=demoRecords();assert.equal(d.checkins.length,608);assert.equal(d.shifts.length,8);
+  const d=demoRecords(new Date('2026-10-13T12:00:00.000Z'));assert.equal(d.checkins.length,608);assert.equal(d.shifts.length,8);
   assert.equal(new Set([...d.checkins,...d.shifts].map(r=>r.id)).size,616);
   for(const q of quota(d.checkins)) assert.equal(q.completed,75);
   for(const r of d.checkins) assert.deepEqual(validateCheckin(r,[],now),{});
@@ -252,7 +252,7 @@ test('B03 board and action log CSV have the specified columns and synthetic mark
   const html=stationBoardHTML(demo.action_log,'S1',en);assert.ok(html.includes(BOARD_NOTICE));assert.ok(html.includes('Updated'));assert.ok(html.includes('Demonstration: synthetic data'));
 });
 test('B04 board log exports round trip and conflicts preserve append-only history',()=>{
-  const demo=demoRecords(),json=exportJSON(demo.checkins,demo.shifts,demo.action_log);
+  const demo=demoRecords(new Date('2026-10-13T12:00:00.000Z')),json=exportJSON(demo.checkins,demo.shifts,demo.action_log);
   assert.deepEqual(prepareImport(json,'json',undefined,now).action_log,demo.action_log.slice().sort((a,b)=>a.updated_at.localeCompare(b.updated_at)));
   const log=prepareImport(actionLogCSV(demo.action_log),'csv',undefined,now).action_log;assert.equal(log.length,20);
   assert.equal(prepareImport(json,'json',demo,now).duplicates,636);
