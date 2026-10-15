@@ -2,7 +2,7 @@
 
 Checked Here is a working demonstration by TransitX Labs Inc. It shows how station staff could collect rider cards, log station actions and post a board of what was planned, checked or not done. It includes a rider phone form, quota counts and exports. All records are synthetic. It is not approved for real use.
 
-![Station action board from the Checked Here demo with synthetic data: the status legend and Checked notice, then actions marked Planned, Checked or Not done, each with its status date.](docs/media/hero-board.png)
+![Checked Here demo on the Station board tab, synthetic data: the offline-ready note, the slot for the agency's approved collection notice, the board station, time zone and print layout settings, and the print and export buttons.](docs/media/hero-board.png)
 
 **[Try it live](https://transitxlabs.github.io/checked-here/)** (static HTML, no install). See `docs/PAGES_TODO.md` for Pages media notes.
 
