@@ -20,8 +20,8 @@ CHROME = os.environ.get(
     "CHROME_EXECUTABLE",
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 )
-FFMPEG = os.environ.get("FFMPEG", "/Users/studio/.homebrew/bin/ffmpeg")
-EXIFTOOL = os.environ.get("EXIFTOOL", "/opt/homebrew/bin/exiftool")
+FFMPEG = os.environ.get("FFMPEG") or shutil.which("ffmpeg") or "ffmpeg"
+EXIFTOOL = os.environ.get("EXIFTOOL") or shutil.which("exiftool")
 
 
 def run(cmd: list[str], **kwargs) -> None:
