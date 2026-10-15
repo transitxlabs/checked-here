@@ -4,6 +4,8 @@ Checked Here is a working demonstration by TransitX Labs Inc. It shows how stati
 
 ![Checked Here demo on the Station board tab, synthetic data: the offline-ready note, the slot for the agency's approved collection notice, the board station, time zone and print layout settings, and the print and export buttons.](docs/media/hero-board.png)
 
+How it was made: its code and documentation were written with AI coding assistants and reviewed, tested and revised by Amir Daneshpajouh.
+
 **[Try it live](https://transitxlabs.github.io/checked-here/)** (static HTML, no install). See `docs/PAGES_TODO.md` for Pages media notes.
 
 [![Screen recording preview of the Checked Here demo on synthetic data](docs/media/demo-preview.gif)](https://transitxlabs.github.io/checked-here/media/demo.mp4)
