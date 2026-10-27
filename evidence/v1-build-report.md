@@ -10,18 +10,16 @@ Final commit message: `Document version 1 and retain release checks`.
 
 Author and committer: `Amirhossein (Amir) Daneshpajouh <52765136+Daneshpajouh@users.noreply.github.com> | Amirhossein (Amir) Daneshpajouh <52765136+Daneshpajouh@users.noreply.github.com>`.
 
-Starting commit: `75dc869bef9ce7e16e5e6518f5d2863ee3d937a5`. All earlier commits were retained. Six new commits use the requested author and committer, plain messages and no trailers. No remote was created, nothing was pushed, no packages were installed and no external service was contacted. The company retains publication and release review. There was no deployment.
+Starting commit: `75dc869bef9ce7e16e5e6518f5d2863ee3d937a5`. All earlier commits were retained. Six new commits were added. No remote was created, nothing was pushed, no packages were installed and no external service was contacted. The company retains publication and release review. There was no deployment.
 
-Hub: no (the brief prohibits contacting services).
-
-This is an uncommitted post-commit receipt. `BUILD_REPORT.md` and `SHA256SUMS` remain uncommitted. Historical receipt bytes were preserved in `evidence/v0.2-build-report.md` and `evidence/v0.2-SHA256SUMS.txt`; earlier browser and fault evidence is unchanged. All 183 committed files were compared byte for byte with the working files. `SHA256SUMS` covers those files and this final report, and excludes itself.
+This report was written after the commit. `BUILD_REPORT.md` and `SHA256SUMS` remain uncommitted. The version 0.2 report and checksum bytes were preserved in `evidence/v0.2-build-report.md` and `evidence/v0.2-SHA256SUMS.txt`; earlier browser and fault evidence is unchanged. All 183 committed files were compared byte for byte with the working files. `SHA256SUMS` covers those files and this final report, and excludes itself.
 
 ## Delivered behaviour
 
 - Station board is the third capture and board route, after staff entry and rider phone form. Each action has a fixed station, title and concern from question 2 or Other. Planned, Checked on site and Not done are supported. Not done requires a short reason.
 - Each status update appends a complete, dated synthetic snapshot to IndexedDB. Updates never replace earlier events. Transaction validation prevents invalid history. The board shows the latest event per action, each UTC update date and a synthetic marker.
 - Printable boards use large high-contrast type and the exact line "Checked means staff checked this action on site. It is not a safety rating." Current board and full log CSV exports include the synthetic marker. The dictionary includes both datasets.
-- The printable rider card and both forms use the same six-question source. The supplied draft v2.1 was checked against SHA-256 `cc0040fa1475a4bfe98ce93c0e94f644c1baeb21358532ecbdafb5ecada0b071`. Question wording, choices, conditional instruction, collection placeholder and draft footer are retained. The demo keeps "Emergency: call 911." and replaces the supplied non-emergency line with the required client-approved help placeholder. No transit agency is named.
+- The printable rider card and both forms use the same six-question source. Draft v2.1 was checked against SHA-256 `cc0040fa1475a4bfe98ce93c0e94f644c1baeb21358532ecbdafb5ecada0b071`. Question wording, choices, conditional instruction, collection placeholder and draft footer are retained. The demo keeps "Emergency: call 911." and replaces the draft's non-emergency line with the required client-approved help placeholder. No transit agency is named.
 - A separate synthetic label marks the printable card. The rider form retains its urgent-help and self-selection notices. Follow-up questions are required only after Yes, cleared and stored as null otherwise. Existing validation, quotas, numeric shifts, imports, exports and clearing safeguards remain.
 - Demo loading adds 608 synthetic check-ins, 8 shifts and 20 dated action events across four placeholder stations, two staffed rounds and all three statuses. Exact repeat loading skips 636 records. Confirmed clearing removes every dataset after verifying a current complete JSON export.
 - The home screen explains the three routes. Seven views are available, including the printable card, quota view and device data. System typography, responsive spacing, light and dark schemes, reduced-motion support, landmarks, skip link, labelled controls, question fieldsets, linked alert errors, focus and polite status regions are present.
@@ -32,11 +30,11 @@ This is an uncommitted post-commit receipt. `BUILD_REPORT.md` and `SHA256SUMS` r
 
 Runtime: Node v22.15.1. All checks used installed local software only.
 
-1. `node scripts/run-faults.mjs --v1`: exit 0. All 42 named tests failed individually with exit 1 on their own planted semantic fault. Syntax-only failures are rejected. Mutations were made in disposable copies; source files were unchanged. [Run](evidence/v1-fault-run.txt), [individual fault ledger](evidence/v1-fault-results.json).
+1. `node scripts/run-faults.mjs --v1`: exit 0. All 42 named tests failed individually with exit 1 on their own planted semantic fault. Syntax-only failures are rejected. Mutations were made in disposable copies; source files were unchanged. [Run](evidence/v1-fault-run.txt), [individual fault results](evidence/v1-fault-results.json).
 2. `node --test`: exit 0 after the final fault run. 42 passed, 0 failed, 0 skipped. The original 33 tests remain; nine new tests were added. [Passing transcript](evidence/v1-pass-run.txt).
 3. `git diff --cached --check`: exit 0 before each retained commit. The final keyboard transcript's trailing whitespace was removed before its commit. CSV CRLF bytes remain preserved by the repository attributes.
-4. All 183 committed files match their working-file bytes. Detached checksums were verified after writing this receipt.
-5. Text checks found no em or en dashes in delivered prose, no named transit agency and no prohibited attribution. The starting repository had no remotes; none were added.
+4. All 183 committed files match their working-file bytes. Detached checksums were verified after writing this report.
+5. Text checks found no em or en dashes in delivered prose and no named transit agency. The starting repository had no remotes; none were added.
 
 | New test | Rule and planted fault | Retained outcome |
 | --- | --- | --- |
@@ -54,19 +52,19 @@ The passing source also verifies board CSV and JSON round trips, conflicts, stab
 
 ## Browser, print and offline evidence
 
-[Detailed browser receipt](evidence/v1-browser-checks.md), [raw results](evidence/v1-browser-results.json), [run output](evidence/v1-browser-run.txt).
+[Detailed browser checks](evidence/v1-browser-checks.md), [raw results](evidence/v1-browser-results.json), [run output](evidence/v1-browser-run.txt).
 
-- 42 screenshot and layout states passed: all seven views at 320, 768 and 1280 px, each in light and dark schemes. No page overflow, duplicate IDs or undersized visible controls were found. All screenshots are linked in the detailed receipt.
+- 42 screenshot and layout states passed: all seven views at 320, 768 and 1280 px, each in light and dark schemes. No page overflow, duplicate IDs or undersized visible controls were found. All screenshots are linked in the detailed browser checks.
 - Chrome DevTools Protocol Accessibility checks covered every visible input, select and button in 43 states: 719 named control observations. Conditional controls were enabled and the board's required reason was included.
 - 45 local axe-core WCAG 2.1 A/AA scans reported zero violations. The existing local copy was used offline without installation. Some colour-contrast nodes remain scanner manual-review items. Separately, 24 stylesheet text-colour pairs pass 4.5:1 in both schemes, with a minimum of 6.108:1. [Ratios](evidence/v1-contrast-results.json), [run](evidence/v1-contrast-run.txt). These checks are not conformance certification or a complete assistive-technology audit.
 - Keyboard-only walkthroughs completed all seven views, including completed staff and rider check-ins, a numeric shift log, board entry, conditional questions, validation focus, printable-card button activation, table access, JSON download and confirmed clearing. [Script](scripts/browser-checks.mjs), [output](evidence/v1-keyboard-output.txt).
 - Actual IndexedDB operations checked demo repeat loading, both forms, board reasons and retained status changes. Actual downloads are retained as [action log](evidence/v1-action-log-browser.csv) and [complete device data](evidence/v1-device-data-browser.json).
 - The printable card and the three-action sample board each fit on one Letter page. Navigation is hidden in print. [Card](evidence/v1-card-print.pdf), [board](evidence/v1-board-print.pdf).
-- The loopback server was stopped before every offline full reload. All seven views reloaded, showed Offline ready and retained the populated synthetic datasets. [Offline reload receipt](evidence/v1-offline-results.json).
+- The loopback server was stopped before every offline full reload. All seven views reloaded, showed Offline ready and retained the populated synthetic datasets. [Offline reload results](evidence/v1-offline-results.json).
 - A second loopback fixture used `/checkin-prototype/`. It upgraded the original v4 worker to v1.0.0, waited for the new controller, removed the older cache, preserved a version 1 check-in and shift through the IndexedDB upgrade, and fully reloaded all seven views with its server stopped. Station query links and route fragments worked together. [Script](scripts/upgrade-checks.mjs), [result](evidence/v1-upgrade-results.json).
 - The final run recorded zero page or console errors and zero external page requests. Local servers and temporary browser profiles were closed.
 
-Initial harness issues and their corrections are recorded in the detailed browser receipt. The final retained runs are complete and passing. Visual review corrected the board title label and restored the supplied draft footer with a separate synthetic marker.
+Initial harness issues and their corrections are recorded in the detailed browser checks. The final retained runs are complete and passing. Visual review corrected the board title label and restored the draft footer with a separate synthetic marker.
 
 ## File list and SHA-256
 
@@ -257,5 +255,5 @@ These are the exact committed payload and evidence bytes. The final report's own
 | `sw.js` | `15da0f2618e299e9d0a6c3829295dd43edfe394026238a7e3e2cbd312cde63ef` |
 | `tests/core.test.mjs` | `183bf2af799495c2152b435ae6d9aa35fcf6b6bb737dc743773b0e27a40bf956` |
 | `tests/helpers/storage.mjs` | `fd65440220b8893dbe67388b71b8e47d37e70ab4aa6ef88e1aa804dd5ad903ac` |
-| `BUILD_REPORT.md` | Final receipt checksum is in `SHA256SUMS`. |
-| `SHA256SUMS` | Detached checksum receipt; excludes itself. |
+| `BUILD_REPORT.md` | Final report checksum is in `SHA256SUMS`. |
+| `SHA256SUMS` | Detached checksum file; excludes itself. |
